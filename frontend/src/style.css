@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    @apply bg-white text-gray-900 antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  #app {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+@layer utilities {
+  .btn-primary {
+    @apply bg-[#E8552A] hover:bg-[#d4461c] text-white font-medium px-5 py-2.5 rounded-lg transition-colors duration-200 cursor-pointer;
+  }
+  .btn-outline {
+    @apply border border-gray-300 hover:border-gray-500 text-gray-700 font-medium px-5 py-2.5 rounded-lg transition-colors duration-200 cursor-pointer bg-white;
+  }
+  /* Masonry grid — natural aspect-ratio art cards */
+  .masonry {
+    columns: 2;
+    column-gap: 1rem;
+  }
+  @media (min-width: 768px)  { .masonry { columns: 3; } }
+  @media (min-width: 1280px) { .masonry { columns: 4; } }
+
+  .masonry-item {
+    break-inside: avoid;
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  /* Dify AI widget anchor — bottom-right, above everything */
+  #dify-chat-root {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 9999;
+  }
+}
