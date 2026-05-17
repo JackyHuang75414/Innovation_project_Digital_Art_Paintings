@@ -1,0 +1,8 @@
+# Local IDE settings
+.idea/
+
+# Frontend files are managed on the frontend branch.
+frontend/
+
+# Local agent instructions
+AGENTS.md
