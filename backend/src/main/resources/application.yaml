@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: backend
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://172.18.32.1:3306/digital_art_paintings
+    username: root
+    password: 123456
+
+mybatis:
+    mapper-locations: classpath:mapper/*.xml
+    type-aliases-package: com.ren.yinghui.backend.pojo
