@@ -1,13 +1,14 @@
 <script setup>
 import { ref } from 'vue'
+import { RouterLink } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
 
 const cart = useCartStore()
 
-// Placeholder artwork — replace with API fetch using useRoute().params.id
+// Placeholder — replace with API fetch using useRoute().params.id
 const artwork = ref({
   id: 1,
-  imageUrl: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=800',
+  imageUrl: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=900',
   title: 'Abstract Harmony',
   artistName: 'Sophie Laurent',
   artistCountry: 'France',
@@ -29,70 +30,91 @@ function addToCart() {
   setTimeout(() => { added.value = false }, 2000)
 }
 
-// Recommendations placeholder
 const recommendations = ref([
-  { id: 2, imageUrl: 'https://images.unsplash.com/photo-1547826039-bfc35e0f1ea8?w=300', title: 'Urban Geometry', artistName: 'Marco Chen', price: 120 },
-  { id: 3, imageUrl: 'https://images.unsplash.com/photo-1620503374956-c942862f0372?w=300', title: 'Blue Silence', artistName: 'Amara Diallo', price: 75 },
-  { id: 4, imageUrl: 'https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?w=300', title: 'Golden Hour', artistName: 'Lena Kuznetsov', price: 99 },
-  { id: 5, imageUrl: 'https://images.unsplash.com/photo-1605721911519-3dfeb3be25e7?w=300', title: 'Forest Dream', artistName: 'Jules Moreau', price: 65 },
+  { id: 2, imageUrl: 'https://images.unsplash.com/photo-1547826039-bfc35e0f1ea8?w=400', title: 'Urban Geometry',  artistName: 'Marco Chen',     price: 120 },
+  { id: 3, imageUrl: 'https://images.unsplash.com/photo-1620503374956-c942862f0372?w=400', title: 'Blue Silence',   artistName: 'Amara Diallo',   price: 75 },
+  { id: 4, imageUrl: 'https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?w=400', title: 'Golden Hour',    artistName: 'Lena Kuznetsov', price: 99 },
+  { id: 5, imageUrl: 'https://images.unsplash.com/photo-1605721911519-3dfeb3be25e7?w=400', title: 'Forest Dream',   artistName: 'Jules Moreau',   price: 65 },
 ])
 </script>
 
 <template>
-  <div class="max-w-screen-xl mx-auto px-4 py-10">
-    <!-- Breadcrumb -->
-    <nav class="text-sm text-gray-500 mb-6">
-      <RouterLink to="/" class="hover:text-gray-900">Home</RouterLink>
-      <span class="mx-2">/</span>
-      <RouterLink to="/browse" class="hover:text-gray-900">Browse</RouterLink>
-      <span class="mx-2">/</span>
-      <span class="text-gray-900">{{ artwork.title }}</span>
-    </nav>
+  <!-- Breadcrumb -->
+  <div class="bg-[#F7F4F0] border-b border-[#E0D8CE]">
+    <div class="max-w-screen-xl mx-auto px-6 lg:px-16 py-3.5">
+      <nav class="flex items-center gap-2 text-[10px] tracking-[0.2em] uppercase text-gray-400 font-light">
+        <RouterLink to="/" class="hover:text-gray-700 transition-colors">Home</RouterLink>
+        <span class="text-gray-300">/</span>
+        <RouterLink to="/browse" class="hover:text-gray-700 transition-colors">Browse</RouterLink>
+        <span class="text-gray-300">/</span>
+        <span class="text-gray-600">{{ artwork.title }}</span>
+      </nav>
+    </div>
+  </div>
 
-    <!-- Main product layout -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-      <!-- Artwork image -->
-      <div>
+  <div class="max-w-screen-xl mx-auto px-6 lg:px-16 py-12 lg:py-16">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
+
+      <!-- Image -->
+      <div class="bg-[#F7F4F0]">
         <img
           :src="artwork.imageUrl"
           :alt="artwork.title"
-          class="w-full h-auto rounded-2xl shadow-xl object-cover"
+          class="w-full h-auto object-cover"
         />
       </div>
 
-      <!-- Artwork info & purchase -->
-      <div class="flex flex-col gap-5">
+      <!-- Info panel -->
+      <div class="flex flex-col gap-6 lg:py-2">
+
+        <!-- Artist + title -->
         <div>
-          <p class="text-sm text-gray-500">{{ artwork.artistName }} &nbsp;·&nbsp; {{ artwork.artistCountry }}</p>
-          <h1 class="text-3xl font-bold text-gray-900 mt-1 italic">{{ artwork.title }}</h1>
-          <p class="text-gray-500 text-sm mt-1">{{ artwork.medium }} &nbsp;·&nbsp; {{ artwork.year }}</p>
+          <p class="text-[10px] tracking-[0.3em] uppercase text-gray-400 font-light mb-3">
+            {{ artwork.artistName }}&ensp;·&ensp;{{ artwork.artistCountry }}
+          </p>
+          <h1 class="font-display italic font-normal text-gray-900 leading-tight"
+              style="font-size: clamp(1.75rem, 3.5vw, 2.75rem)">
+            {{ artwork.title }}
+          </h1>
+          <p class="text-[11px] tracking-[0.15em] text-gray-400 mt-2.5 font-light">
+            {{ artwork.medium }}&ensp;·&ensp;{{ artwork.year }}
+          </p>
         </div>
 
-        <p class="text-3xl font-bold text-gray-900">€{{ artwork.price }}</p>
+        <!-- Price -->
+        <div class="flex items-baseline gap-3">
+          <p class="font-display italic text-4xl font-normal text-gray-900">€{{ artwork.price }}</p>
+          <p class="text-xs text-gray-400 font-light tracking-wide">per print</p>
+        </div>
 
-        <p class="text-gray-700 leading-relaxed">{{ artwork.description }}</p>
+        <div class="h-px bg-gray-100" />
+
+        <!-- Description -->
+        <p class="text-gray-600 leading-relaxed text-sm font-light">{{ artwork.description }}</p>
 
         <!-- Tags -->
         <div class="flex flex-wrap gap-2">
           <span
             v-for="tag in artwork.tags"
             :key="tag"
-            class="px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-medium"
+            class="border border-gray-200 text-gray-500 text-[10px] tracking-[0.15em] uppercase px-3 py-1 font-light"
           >
-            #{{ tag }}
+            {{ tag }}
           </span>
         </div>
 
+        <div class="h-px bg-gray-100" />
+
         <!-- Size selector -->
         <div>
-          <p class="text-sm font-semibold text-gray-700 mb-2">Select size</p>
+          <p class="text-[10px] tracking-[0.3em] uppercase text-gray-400 font-light mb-3">Select size</p>
           <div class="flex flex-wrap gap-2">
             <button
               v-for="size in sizes"
               :key="size"
-              class="px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors"
+              class="px-4 py-2 border text-xs tracking-wide font-light transition-colors"
               :class="selectedSize === size
-                ? 'border-[#E8552A] bg-[#E8552A]/10 text-[#E8552A]'
+                ? 'border-gray-900 bg-gray-900 text-white'
                 : 'border-gray-200 text-gray-600 hover:border-gray-400'"
               @click="selectedSize = size"
             >
@@ -102,58 +124,67 @@ const recommendations = ref([
         </div>
 
         <!-- Add to cart -->
-        <button
-          class="btn-primary w-full text-base py-3 mt-2 flex items-center justify-center gap-2"
-          @click="addToCart"
-        >
-          <svg v-if="!added" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.4 6h12.8" />
-          </svg>
-          <span>{{ added ? '✓ Added to cart!' : 'Add to Cart' }}</span>
+        <button class="btn-primary w-full text-center" @click="addToCart">
+          {{ added ? 'Added to Cart' : 'Add to Cart' }}
         </button>
 
         <!-- Trust signals -->
-        <div class="grid grid-cols-3 gap-3 pt-4 border-t border-gray-100 text-center">
-          <div class="text-xs text-gray-500">
-            <p class="text-base mb-1">🚚</p>
-            Free shipping over €80
+        <div class="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
+          <div class="flex flex-col items-center gap-2 text-center">
+            <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/>
+            </svg>
+            <p class="text-[10px] tracking-[0.08em] uppercase text-gray-400 font-light leading-snug">Free shipping<br/>over €80</p>
           </div>
-          <div class="text-xs text-gray-500">
-            <p class="text-base mb-1">↩️</p>
-            Free returns
+          <div class="flex flex-col items-center gap-2 text-center">
+            <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/>
+            </svg>
+            <p class="text-[10px] tracking-[0.08em] uppercase text-gray-400 font-light leading-snug">Free<br/>returns</p>
           </div>
-          <div class="text-xs text-gray-500">
-            <p class="text-base mb-1">✅</p>
-            Authenticity cert.
+          <div class="flex flex-col items-center gap-2 text-center">
+            <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z"/>
+            </svg>
+            <p class="text-[10px] tracking-[0.08em] uppercase text-gray-400 font-light leading-snug">Authenticity<br/>cert.</p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- AI Recommendations (below fold) -->
-    <section class="mt-16">
-      <h2 class="text-xl font-bold text-gray-900 mb-6">
-        ✨ You might also like
-        <span class="text-sm font-normal text-gray-400 ml-2">— AI-recommended</span>
-      </h2>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <!-- AI Recommendations -->
+    <section class="mt-20 lg:mt-24 pt-12 border-t border-gray-100">
+      <div class="flex items-end justify-between mb-10">
+        <div>
+          <p class="text-[10px] tracking-[0.35em] uppercase text-[#E8552A] mb-3 font-light">AI-Curated</p>
+          <h2 class="font-display text-3xl lg:text-4xl font-normal italic text-gray-900">
+            You May Also Like
+          </h2>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6 lg:gap-8">
         <RouterLink
           v-for="rec in recommendations"
           :key="rec.id"
           :to="`/artwork/${rec.id}`"
           class="group block"
         >
-          <div class="overflow-hidden rounded-xl bg-gray-100">
+          <div class="overflow-hidden bg-[#F7F4F0]">
             <img
               :src="rec.imageUrl"
               :alt="rec.title"
-              class="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300"
+              class="w-full h-44 object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+              loading="lazy"
             />
           </div>
-          <p class="text-xs text-gray-500 mt-2">{{ rec.artistName }}</p>
-          <p class="text-sm font-medium italic text-gray-900">{{ rec.title }}</p>
-          <p class="text-sm font-semibold text-gray-900 mt-0.5">€{{ rec.price }}</p>
+          <div class="mt-3">
+            <p class="text-[10px] tracking-[0.2em] uppercase text-gray-400 font-light">{{ rec.artistName }}</p>
+            <p class="font-display italic text-base text-gray-900 mt-1 leading-snug">{{ rec.title }}</p>
+            <p class="text-sm font-medium text-gray-900 mt-1">€{{ rec.price }}</p>
+          </div>
         </RouterLink>
       </div>
     </section>

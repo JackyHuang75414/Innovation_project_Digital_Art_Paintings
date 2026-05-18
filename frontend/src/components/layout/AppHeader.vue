@@ -27,25 +27,27 @@ function submitSearch() {
 
 <template>
   <!-- Trust bar -->
-  <div class="bg-gray-900 text-gray-300 text-xs text-center py-2 px-4">
-    Free worldwide shipping on orders over €80 &nbsp;·&nbsp; Secure checkout &nbsp;·&nbsp; Authentic digital art
+  <div class="bg-gray-900 text-gray-400 text-center py-2 px-4">
+    <p class="text-[10px] tracking-[0.25em] uppercase font-light">
+      Free worldwide shipping on orders over €80 &ensp;·&ensp; Secure checkout &ensp;·&ensp; Authentic digital art
+    </p>
   </div>
 
   <!-- Main header -->
-  <header class="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
-    <div class="max-w-screen-xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
+  <header class="sticky top-0 z-40 bg-white border-b border-gray-100">
+    <div class="max-w-screen-xl mx-auto px-6 lg:px-16 h-[4.5rem] flex items-center justify-between gap-4">
       <!-- Logo -->
-      <RouterLink to="/" class="flex-shrink-0 text-xl font-bold tracking-tight text-gray-900">
+      <RouterLink to="/" class="flex-shrink-0 font-display italic text-[1.35rem] font-normal tracking-normal text-gray-900">
         ArtCanvas
       </RouterLink>
 
       <!-- Category nav (desktop) -->
-      <nav class="hidden lg:flex items-center gap-6">
+      <nav class="hidden lg:flex items-center gap-8">
         <RouterLink
           v-for="cat in categories"
           :key="cat.slug"
           :to="{ path: '/browse', query: { category: cat.slug } }"
-          class="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+          class="text-[11px] tracking-[0.18em] uppercase text-gray-500 hover:text-gray-900 transition-colors duration-150 font-light"
         >
           {{ cat.label }}
         </RouterLink>

@@ -13,6 +13,12 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': 'http://localhost:8000',
+      // Proxy BlockCypher to bypass browser CORS restrictions in dev
+      '/blockcypher': {
+        target: 'https://api.blockcypher.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/blockcypher/, ''),
+      },
     },
   },
 })
