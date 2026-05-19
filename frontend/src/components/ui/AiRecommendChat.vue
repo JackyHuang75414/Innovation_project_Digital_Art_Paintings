@@ -2,10 +2,10 @@
 /**
  * AiRecommendChat — floating AI art-curator chat widget.
  *
- * To connect a real API, replace the `mockReply()` function with a real call,
- * e.g. POST to /api/recommend or a Dify workflow endpoint.
- * Expected API response shape:
- *   { text: string, artworks: Array<{ id, imageUrl, title, artistName, price }> }
+ * Backend: DeepSeek Chat API (OpenAI-compatible)
+ * The API key lives in .env as LLM_API_KEY (no VITE_ prefix).
+ * Vite proxies /llm-api → https://api.deepseek.com with the
+ * Authorization header injected server-side — key never reaches the browser.
  */
 import { ref, nextTick } from 'vue'
 import { RouterLink } from 'vue-router'
@@ -15,16 +15,29 @@ const inputText = ref('')
 const isTyping = ref(false)
 const messagesEl = ref(null)
 
-// ─── Placeholder artwork pool ────────────────────────────────────────────────
-// Replace this with real API data once the backend is ready.
+// ─── Artwork pool (replace with real API data when backend is ready) ──────────
 const artworkPool = [
   { id: 1, imageUrl: 'https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?w=200&q=80', title: 'Golden Hour Reverie', artistName: 'Sophie Laurent', price: 89 },
   { id: 2, imageUrl: 'https://images.unsplash.com/photo-1547826039-bfc35e0f1ea8?w=200&q=80', title: 'Urban Geometry III', artistName: 'Amara Diallo', price: 120 },
   { id: 3, imageUrl: 'https://images.unsplash.com/photo-1620503374956-c942862f0372?w=200&q=80', title: 'Blue Silence', artistName: 'Marco Chen', price: 75 },
   { id: 4, imageUrl: 'https://images.unsplash.com/photo-1605721911519-3dfeb3be25e7?w=200&q=80', title: 'Forest Dream', artistName: 'Jules Moreau', price: 65 },
   { id: 5, imageUrl: 'https://images.unsplash.com/photo-1559762717-99c81ac85059?w=200&q=80', title: 'Desert Wind', artistName: 'Yuki Tanaka', price: 110 },
-  { id: 6, imageUrl: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=200&q=80', title: 'Abstract Harmony', artistName: 'Lena Kuznetsov', price: 99 },
+  { id: 6, imageUrl: 'https://images.unsplash.com/photo-1579763902614-a3fb3927b6a5?w=200&q=80', title: 'Abstract Harmony', artistName: 'Lena Kuznetsov', price: 99 },
 ]
+
+// ─── System prompt ────────────────────────────────────────────────────────────
+const SYSTEM_PROMPT = `You are ArtCanvas AI, a sophisticated art curator for a premium digital art marketplace.
+Help visitors discover artworks that match their aesthetic tastes and emotional needs.
+Guidelines:
+- Respond concisely in 2–3 elegant sentences.
+- Suggest specific styles, moods, colours, or techniques the visitor might enjoy.
+- Maintain a warm, knowledgeable tone befitting a luxury gallery.
+- After your recommendation, naturally mention you will show some matching works.
+Available categories: Oil, Watercolour, Acrylic, Digital Art, Photography, Ink.`
+
+// ─── Conversation state ───────────────────────────────────────────────────────
+// apiHistory holds text-only turn history sent to the model on each call.
+const apiHistory = []
 
 const messages = ref([
   {
@@ -42,34 +55,61 @@ function scrollToBottom() {
   })
 }
 
-// ─── API hook ────────────────────────────────────────────────────────────────
-// Replace this function body with a real fetch / axios call when the API is ready.
-// Must return: { text: string, artworks: Artwork[] }
-async function getReply(userMessage) {
-  // TODO: replace with real API call, e.g.
-  //   const res = await api.post('/recommend', { message: userMessage })
-  //   return res.data
-  await new Promise(r => setTimeout(r, 1100))
-  const picks = [...artworkPool].sort(() => Math.random() - 0.5).slice(0, 2)
-  return {
-    text: 'Based on what you\'ve shared, here are two works I think you\'ll find compelling:',
-    artworks: picks,
-  }
-}
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── DeepSeek API call (OpenAI-compatible) ───────────────────────────────────
+async function callLLM(userText) {
+  const res = await fetch('/llm-api/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'deepseek-chat',
+      stream: false,
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        ...apiHistory,
+        { role: 'user', content: userText },
+      ],
+    }),
+  })
 
+  if (!res.ok) {
+    const raw = await res.text()
+    throw new Error(`DeepSeek ${res.status}: ${raw}`)
+  }
+
+  const data = await res.json()
+  const text = data.choices?.[0]?.message?.content
+  if (!text) throw new Error('Unexpected response: ' + JSON.stringify(data).slice(0, 200))
+
+  return text
+}
+
+// ─── Send message ─────────────────────────────────────────────────────────────
 async function sendMessage() {
   const text = inputText.value.trim()
   if (!text || isTyping.value) return
 
   messages.value.push({ role: 'user', text, artworks: [] })
+  apiHistory.push({ role: 'user', content: text })
   inputText.value = ''
   isTyping.value = true
   scrollToBottom()
 
   try {
-    const reply = await getReply(text)
-    messages.value.push({ role: 'ai', ...reply })
+    const replyText = await callLLM(text)
+
+    // Keep multi-turn context
+    apiHistory.push({ role: 'assistant', content: replyText })
+
+    // Pair AI text with 2 random artwork cards
+    const picks = [...artworkPool].sort(() => Math.random() - 0.5).slice(0, 2)
+    messages.value.push({ role: 'ai', text: replyText, artworks: picks })
+  } catch (err) {
+    console.error('[AiRecommendChat] DeepSeek error:', err)
+    messages.value.push({
+      role: 'error',
+      text: String(err?.message || err),
+      artworks: [],
+    })
   } finally {
     isTyping.value = false
     scrollToBottom()
@@ -143,8 +183,16 @@ function open() {
         >
           <div :class="msg.role === 'user' ? 'max-w-[85%]' : 'max-w-full w-full'">
 
+            <!-- Error bubble -->
+            <template v-if="msg.role === 'error'">
+              <div class="bg-red-50 border border-red-200 px-3 py-2.5">
+                <p class="text-[10px] tracking-[0.15em] uppercase text-red-400 font-light mb-1">API Error</p>
+                <p class="text-xs text-red-600 font-mono break-all">{{ msg.text }}</p>
+              </div>
+            </template>
+
             <!-- AI bubble -->
-            <template v-if="msg.role === 'ai'">
+            <template v-else-if="msg.role === 'ai'">
               <p class="text-sm text-gray-700 font-light leading-relaxed">{{ msg.text }}</p>
               <div v-if="msg.artworks?.length" class="mt-3 space-y-2">
                 <RouterLink
@@ -175,7 +223,7 @@ function open() {
             </template>
 
             <!-- User bubble -->
-            <template v-else>
+            <template v-else-if="msg.role === 'user'">
               <p class="text-sm text-white bg-[#E8552A] px-3.5 py-2.5 font-light leading-relaxed inline-block">
                 {{ msg.text }}
               </p>
