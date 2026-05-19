@@ -1,14 +1,17 @@
-package com.ren.yinghui.backend.pojo;
+package com.ren.yinghui.backend.entity;
 
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Data
-public class Tag {
+public class Category {
     private Long id;
     private String name;
     private String slug;
+    private String description;
+    private Integer sortOrder;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
 }

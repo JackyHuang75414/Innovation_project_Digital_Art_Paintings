@@ -152,8 +152,8 @@ GET /api/artworks
 | orientation | string | 否 | Portrait | 方向 |
 | color | string | 否 | Red | 主色 |
 | sort | string | 否 | recommended | 排序 |
-| page | number | 否 | 1 | 页码 |
-| pageSize | number | 否 | 12 | 每页数量 |
+| offset | number | 否 | 0 | 从第几条开始查询，用于 Load more |
+| limit | number | 否 | 12 | 每次查询数量 |
 
 `sort` 可选值：
 
@@ -164,6 +164,14 @@ GET /api/artworks
 | price_asc | 价格从低到高 |
 | price_desc | 价格从高到低 |
 | trending | 热门 |
+
+Load more 示例：
+
+```http
+GET /api/artworks?offset=0&limit=12
+GET /api/artworks?offset=12&limit=12
+GET /api/artworks?offset=24&limit=12
+```
 
 当前前端 `useArtworksStore` 直接接收数组，所以后端最简单可以返回数组：
 
@@ -196,8 +204,8 @@ GET /api/artworks
       "badge": "Trending"
     }
   ],
-  "page": 1,
-  "pageSize": 12,
+  "offset": 0,
+  "limit": 12,
   "total": 120
 }
 ```

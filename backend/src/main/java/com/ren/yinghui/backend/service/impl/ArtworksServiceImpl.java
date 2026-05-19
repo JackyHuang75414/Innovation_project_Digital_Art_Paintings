@@ -2,9 +2,10 @@ package com.ren.yinghui.backend.service.impl;
 
 
 import com.ren.yinghui.backend.mapper.ArtworksMapper;
-import com.ren.yinghui.backend.pojo.Artwork;
-import com.ren.yinghui.backend.pojo.ArtworkQueryDTO;
+import com.ren.yinghui.backend.entity.Artwork;
+import com.ren.yinghui.backend.dto.ArtworkQueryDTO;
 import com.ren.yinghui.backend.service.ArtworksService;
+import com.ren.yinghui.backend.vo.ArtworkDetailVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,8 +26,14 @@ public class ArtworksServiceImpl implements ArtworksService {
     }
     //get artwork detail
     @Override
-    public Artwork findById(Integer id) {
-        Artwork artwork = artworksMapper.findById(id);
-        return artwork;
+    public ArtworkDetailVO findDetailById(Integer id) {
+        ArtworkDetailVO artworkDetail = artworksMapper.findDetailById(id);
+        if (artworkDetail == null) {
+            return null;
+        }
+
+        artworkDetail.setTags(artworksMapper.findTagsByArtworkId(id));
+        artworkDetail.setAvailableSizes(artworksMapper.findAvailableSizesByArtworkId(id));
+        return artworkDetail;
     }
 }
