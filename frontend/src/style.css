@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    @apply bg-white text-gray-900 antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+  }
+  #app {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+@layer utilities {
+  /* Serif display typeface — Playfair Display */
+  .font-display {
+    font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  }
+
+  /* Primary CTA — refined, minimal rounded corners, generous tracking */
+  .btn-primary {
+    @apply bg-[#E8552A] hover:bg-[#d4461c] text-white text-sm font-medium
+           px-8 py-3 tracking-[0.1em] uppercase transition-colors duration-200 cursor-pointer;
+  }
+
+  /* Outlined secondary button */
+  .btn-outline {
+    @apply border border-gray-900 hover:bg-gray-900 hover:text-white text-gray-900 text-sm font-medium
+           px-8 py-3 tracking-[0.1em] uppercase transition-colors duration-200 cursor-pointer bg-white;
+  }
+
+  /* Ghost link — text with animated underline (used on dark backgrounds) */
+  .btn-ghost {
+    @apply inline-flex items-center gap-3 text-sm tracking-[0.15em] uppercase
+           border-b border-current pb-0.5 hover:opacity-70 transition-opacity;
+  }
+
+  /* Masonry grid — natural aspect-ratio art cards */
+  .masonry {
+    columns: 2;
+    column-gap: 1.25rem;
+  }
+  @media (min-width: 768px)  { .masonry { columns: 3; } }
+  @media (min-width: 1280px) { .masonry { columns: 4; } }
+
+  .masonry-item {
+    break-inside: avoid;
+    margin-bottom: 1.25rem;
+    display: block;
+  }
+
+  /* Dify AI widget anchor — bottom-right, above everything */
+  #dify-chat-root {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 9999;
+  }
+}
