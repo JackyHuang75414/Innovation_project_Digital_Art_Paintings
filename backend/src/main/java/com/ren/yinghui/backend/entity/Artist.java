@@ -1,17 +1,15 @@
-package com.ren.yinghui.backend.pojo;
+package com.ren.yinghui.backend.entity;
 
 import lombok.Data;
 
 import java.time.LocalDateTime;
-
 @Data
-public class User {
+public class Artist {
     private Long id;
     private String name;
-    private String email;
-    private String passwordHash;
-    private String phone;
-    private String role;
+    private String country;
+    private String bio;
+    private String avatarUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

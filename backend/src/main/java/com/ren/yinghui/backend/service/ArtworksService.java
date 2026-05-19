@@ -1,9 +1,9 @@
 package com.ren.yinghui.backend.service;
 
 
-import com.ren.yinghui.backend.pojo.Artwork;
-import com.ren.yinghui.backend.pojo.ArtworkQueryDTO;
-import org.springframework.stereotype.Service;
+import com.ren.yinghui.backend.entity.Artwork;
+import com.ren.yinghui.backend.dto.ArtworkQueryDTO;
+import com.ren.yinghui.backend.vo.ArtworkDetailVO;
 
 import java.util.List;
 
@@ -11,6 +11,7 @@ import java.util.List;
 public interface ArtworksService {
     //list artworks
     List<Artwork> list(ArtworkQueryDTO query);
+
     //get artwork detail
-    Artwork findById(Integer id);
+    ArtworkDetailVO findDetailById(Integer id);
 }

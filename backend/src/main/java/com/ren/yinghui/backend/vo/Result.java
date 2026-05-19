@@ -1,4 +1,4 @@
-package com.ren.yinghui.backend.pojo;
+package com.ren.yinghui.backend.vo;
 
 
 import lombok.AllArgsConstructor;

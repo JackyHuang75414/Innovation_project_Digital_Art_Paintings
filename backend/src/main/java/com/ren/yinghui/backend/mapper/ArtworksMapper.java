@@ -1,9 +1,9 @@
 package com.ren.yinghui.backend.mapper;
 
-import com.ren.yinghui.backend.pojo.Artwork;
-import com.ren.yinghui.backend.pojo.ArtworkQueryDTO;
+import com.ren.yinghui.backend.entity.Artwork;
+import com.ren.yinghui.backend.dto.ArtworkQueryDTO;
+import com.ren.yinghui.backend.vo.ArtworkDetailVO;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -12,7 +12,13 @@ public interface ArtworksMapper {
     //list artworks
 //    @Select("select * from artworks")
     List<Artwork> list(ArtworkQueryDTO query);
+
     //get artwork detail
-    @Select("select * from artworks where id=#{id}")
-    Artwork findById(Integer id);
+    ArtworkDetailVO findDetailById(Integer id);
+
+    //get artwork tags
+    List<String> findTagsByArtworkId(Integer id);
+
+    //get artwork available sizes
+    List<String> findAvailableSizesByArtworkId(Integer id);
 }
