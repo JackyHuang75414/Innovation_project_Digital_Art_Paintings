@@ -160,4 +160,16 @@
         WHERE order_id = #{orderId}
         ORDER BY id ASC
     </select>
+
+    <select id="findByUserId" resultType="com.ren.yinghui.backend.vo.OrderListVO">
+        SELECT
+            id,
+            order_no,
+            status,
+            total,
+            created_at
+        FROM orders
+        WHERE user_id = #{userId}
+        ORDER BY created_at DESC, id DESC
+    </select>
 </mapper>

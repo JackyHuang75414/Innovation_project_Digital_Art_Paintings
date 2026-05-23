@@ -400,7 +400,7 @@ GET /orders/me
 请求头：
 
 ```http
-Authorization: Bearer <token>
+Authorization: <token>
 ```
 
 响应示例：
@@ -458,7 +458,7 @@ GET /users/me
 请求头：
 
 ```http
-Authorization: Bearer <token>
+Authorization: <token>
 ```
 
 响应示例：
@@ -480,7 +480,7 @@ POST /wishlist
 请求头：
 
 ```http
-Authorization: Bearer <token>
+Authorization: <token>
 ```
 
 请求体：

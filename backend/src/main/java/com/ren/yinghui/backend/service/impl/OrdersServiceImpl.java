@@ -5,8 +5,10 @@ import com.ren.yinghui.backend.dto.CreateOrderItemDTO;
 import com.ren.yinghui.backend.entity.*;
 import com.ren.yinghui.backend.mapper.OrdersMapper;
 import com.ren.yinghui.backend.service.OrdersService;
+import com.ren.yinghui.backend.utils.ThreadLocalUtil;
 import com.ren.yinghui.backend.vo.OrderCreateVO;
 import com.ren.yinghui.backend.vo.OrderDetailVO;
+import com.ren.yinghui.backend.vo.OrderListVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +18,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
@@ -80,6 +83,7 @@ public class OrdersServiceImpl implements OrdersService {
         //组装order
         Order order = new Order();
         order.setOrderNo(generateOrderNo(now));
+        order.setUserId(getCurrentUserId());
         order.setStatus("pending");
         order.setCustomerName(dto.getCustomerName());
         order.setCustomerEmail(dto.getCustomerEmail());
@@ -125,11 +129,25 @@ public class OrdersServiceImpl implements OrdersService {
         return order;
     }
 
+    @Override
+    public List<OrderListVO> findMyOrders() {
+        return ordersMapper.findByUserId(getCurrentUserId());
+    }
+
     private BigDecimal calculateShippingFee(BigDecimal subtotal) {
         if (subtotal.compareTo(new BigDecimal("80.00")) >= 0) {
             return BigDecimal.ZERO;
         }
         return new BigDecimal("9.90");
+    }
+
+    private Long getCurrentUserId() {
+        Map<String, Object> claims = ThreadLocalUtil.get();
+        Object userId = claims.get("id");
+        if (userId instanceof Number number) {
+            return number.longValue();
+        }
+        return Long.valueOf(userId.toString());
     }
 
     private String generateOrderNo(LocalDateTime now) {
