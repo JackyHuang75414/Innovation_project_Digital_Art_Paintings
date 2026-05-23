@@ -421,7 +421,31 @@ Authorization: <token>
 
 当前账户页和收藏按钮只有前端入口，还没有 `src/api` 对应代码。以下接口是建议后续扩展。
 
-### 5.1 用户登录
+### 5.1 用户注册
+
+```http
+POST /user/register
+```
+
+请求参数：
+
+| 参数 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| name | string | 是 | 用户名，3-16 位非空字符 |
+| email | string | 是 | 邮箱 |
+| password | string | 是 | 密码，5-16 位非空字符 |
+
+响应示例：
+
+```json
+{
+  "code": 0,
+  "message": "Operation successful",
+  "data": null
+}
+```
+
+### 5.2 用户登录
 
 ```http
 POST /auth/login
@@ -449,10 +473,10 @@ POST /auth/login
 }
 ```
 
-### 5.2 获取当前用户信息
+### 5.3 获取当前用户信息
 
 ```http
-GET /users/me
+GET /user/me
 ```
 
 请求头：
@@ -471,7 +495,7 @@ Authorization: <token>
 }
 ```
 
-### 5.3 添加收藏
+### 5.4 添加收藏
 
 ```http
 POST /wishlist
@@ -500,7 +524,7 @@ Authorization: <token>
 }
 ```
 
-### 5.4 取消收藏
+### 5.5 取消收藏
 
 ```http
 DELETE /wishlist/{artworkId}
@@ -515,7 +539,7 @@ DELETE /wishlist/{artworkId}
 }
 ```
 
-### 5.5 获取我的收藏
+### 5.6 获取我的收藏
 
 ```http
 GET /wishlist/me
@@ -546,7 +570,7 @@ GET /wishlist/me
 | 作品详情 | `/artwork/:id` | `GET /artworks/{id}` |
 | 相关推荐 | `/artwork/:id` | `GET /artworks/{id}/recommendations` |
 | 购物车 | `/cart` | 本地状态；结算时调用 `POST /orders/create` |
-| 账户页 | `/account` | 后续调用 `GET /users/me`、`GET /orders/me` |
+| 账户页 | `/account` | 后续调用 `GET /user/me`、`GET /orders/me` |
 
 ## 7. 后端最少需要先实现的接口
 
@@ -565,7 +589,7 @@ POST /orders/create
 GET /orders/{id}
 GET /orders/me
 POST /auth/login
-GET /users/me
+GET /user/me
 POST /wishlist
 DELETE /wishlist/{artworkId}
 GET /wishlist/me
