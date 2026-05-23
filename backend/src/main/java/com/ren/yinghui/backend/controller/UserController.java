@@ -4,6 +4,7 @@ import com.ren.yinghui.backend.utils.JwtUtil;
 import com.ren.yinghui.backend.vo.Result;
 import com.ren.yinghui.backend.entity.User;
 import com.ren.yinghui.backend.service.UserService;
+import com.ren.yinghui.backend.vo.UserInfoVO;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,6 +71,15 @@ public class UserController {
             }
 
         }
+    }
+
+    @GetMapping("/me")
+    public Result<UserInfoVO> me() {
+        UserInfoVO user = userService.findCurrentUser();
+        if (user == null) {
+            return Result.error("user not found");
+        }
+        return Result.success(user);
     }
 
 
