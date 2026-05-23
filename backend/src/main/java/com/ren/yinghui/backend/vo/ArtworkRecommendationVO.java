@@ -1,0 +1,14 @@
+package com.ren.yinghui.backend.vo;
+
+import lombok.Data;
+
+import java.math.BigDecimal;
+
+@Data
+public class ArtworkRecommendationVO {
+    private Long id;
+    private String imageUrl;
+    private String title;
+    private String artistName;
+    private BigDecimal price;
+}

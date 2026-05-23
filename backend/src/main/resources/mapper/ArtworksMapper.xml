@@ -4,15 +4,23 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ren.yinghui.backend.mapper.ArtworksMapper"><!--对应接口的全类名-->
 
-	<select id="list" resultType="com.ren.yinghui.backend.entity.Artwork">
-	    SELECT a.* FROM artworks a
+	<select id="list" resultType="com.ren.yinghui.backend.vo.ArtworkListVO">
+	    SELECT
+            a.id,
+            a.image_url,
+            a.title,
+            ar.name AS artist_name,
+            a.price,
+            a.medium,
+            a.badge
+        FROM artworks a
+    JOIN artists ar ON a.artist_id = ar.id
     LEFT JOIN categories c ON a.category_id = c.id
     <where>
         a.is_active = 1
         <if test="q != null and q != ''">
             AND (a.title LIKE CONCAT('%', #{q}, '%')
-                OR a.medium LIKE CONCAT('%', #{q}, '%')
-                OR a.description LIKE CONCAT('%', #{q}, '%'))
+                OR a.medium LIKE CONCAT('%', #{q}, '%'))
         </if>
         <if test="category != null and category != ''">
             AND (c.name = #{category} OR c.slug = #{category})
@@ -76,5 +84,21 @@
         WHERE arts.artwork_id = #{id}
           AND arts.is_available = 1
         ORDER BY s.sort_order ASC, s.id ASC
+    </select>
+
+    <select id="findRecommendations" resultType="com.ren.yinghui.backend.vo.ArtworkRecommendationVO">
+        SELECT
+            a.id,
+            a.image_url,
+            a.title,
+            ar.name AS artist_name,
+            a.price
+        FROM artwork_recommendations r
+        JOIN artworks a ON r.recommended_artwork_id = a.id
+        JOIN artists ar ON a.artist_id = ar.id
+        WHERE r.artwork_id = #{id}
+          AND a.is_active = 1
+        ORDER BY r.score DESC, a.id ASC
+        LIMIT #{limit}
     </select>
 </mapper>

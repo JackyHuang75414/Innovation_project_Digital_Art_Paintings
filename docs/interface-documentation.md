@@ -9,13 +9,13 @@
 前端通过环境变量配置接口地址：
 
 ```env
-VITE_API_BASE_URL=http://localhost:8000/api
+VITE_API_BASE_URL=http://localhost:8000
 ```
 
 如果没有配置，前端默认请求：
 
 ```text
-/api
+/
 ```
 
 ### 1.2 数据格式
@@ -134,17 +134,17 @@ Content-Type: application/json
 
 ### 3.1 获取作品列表
 
-用于浏览页、首页推荐位、分类入口、筛选和排序。
+用于浏览页、首页推荐位、分类入口、筛选、排序和关键词搜索。
 
 ```http
-GET /api/artworks
+GET /artworks
 ```
 
 请求参数：
 
 | 参数 | 类型 | 必填 | 示例 | 说明 |
 | --- | --- | --- | --- | --- |
-| q | string | 否 | abstract | 搜索关键词 |
+| q | string | 否 | abstract | 搜索关键词，匹配作品标题和媒介 |
 | category | string | 否 | Paintings | 分类 |
 | medium | string | 否 | Oil | 媒介 |
 | priceMin | number | 否 | 50 | 最低价格 |
@@ -168,9 +168,9 @@ GET /api/artworks
 Load more 示例：
 
 ```http
-GET /api/artworks?offset=0&limit=12
-GET /api/artworks?offset=12&limit=12
-GET /api/artworks?offset=24&limit=12
+GET /artworks?offset=0&limit=12
+GET /artworks?offset=12&limit=12
+GET /artworks?offset=24&limit=12
 ```
 
 当前前端 `useArtworksStore` 直接接收数组，所以后端最简单可以返回数组：
@@ -217,7 +217,7 @@ GET /api/artworks?offset=24&limit=12
 用于作品详情页 `/artwork/:id`。
 
 ```http
-GET /api/artworks/{id}
+GET /artworks/{id}
 ```
 
 路径参数：
@@ -250,7 +250,7 @@ GET /api/artworks/{id}
 用于详情页底部 “You might also like”。
 
 ```http
-GET /api/artworks/{id}/recommendations
+GET /artworks/{id}/recommendations
 ```
 
 路径参数：
@@ -279,35 +279,6 @@ GET /api/artworks/{id}/recommendations
 ]
 ```
 
-### 3.4 搜索作品
-
-当前 `src/api/artworks.js` 已预留此接口，但页面搜索现在是跳转到 `/browse?q=关键词`。后端可以实现该接口，前端后续可接入。
-
-```http
-GET /api/artworks/search
-```
-
-请求参数：
-
-| 参数 | 类型 | 必填 | 示例 | 说明 |
-| --- | --- | --- | --- | --- |
-| q | string | 是 | blue | 搜索关键词 |
-
-响应示例：
-
-```json
-[
-  {
-    "id": 3,
-    "imageUrl": "https://example.com/blue.jpg",
-    "title": "Blue Silence",
-    "artistName": "Amara Diallo",
-    "price": 75,
-    "medium": "Oil"
-  }
-]
-```
-
 ## 4. 订单接口
 
 ### 4.1 创建订单
@@ -315,7 +286,7 @@ GET /api/artworks/search
 购物车目前保存在前端本地状态，点击结算时应调用该接口。
 
 ```http
-POST /api/orders
+POST /orders/create
 ```
 
 请求体：
@@ -329,18 +300,14 @@ POST /api/orders
       "quantity": 1
     }
   ],
-  "customer": {
-    "name": "Yinghui",
-    "email": "yinghui@example.com",
-    "phone": "123456789"
-  },
-  "shippingAddress": {
-    "country": "France",
-    "city": "Paris",
-    "addressLine1": "1 Rue Example",
-    "addressLine2": "",
-    "postalCode": "75001"
-  },
+  "customerName": "Yinghui",
+  "customerEmail": "yinghui@example.com",
+  "customerPhone": "123456789",
+  "shippingCountry": "France",
+  "shippingCity": "Paris",
+  "shippingAddressLine1": "1 Rue Example",
+  "shippingAddressLine2": "",
+  "shippingPostalCode": "75001",
   "paymentMethod": "card"
 }
 ```
@@ -353,8 +320,14 @@ POST /api/orders
 | items[].artworkId | number | 是 | 作品 ID |
 | items[].size | string | 是 | 用户选择的尺寸 |
 | items[].quantity | number | 是 | 数量 |
-| customer | object | 是 | 顾客信息 |
-| shippingAddress | object | 是 | 收货地址 |
+| customerName | string | 是 | 顾客姓名 |
+| customerEmail | string | 是 | 顾客邮箱 |
+| customerPhone | string | 否 | 顾客电话 |
+| shippingCountry | string | 是 | 收货国家 |
+| shippingCity | string | 是 | 收货城市 |
+| shippingAddressLine1 | string | 是 | 收货地址第一行 |
+| shippingAddressLine2 | string | 否 | 收货地址第二行 |
+| shippingPostalCode | string | 是 | 邮政编码 |
 | paymentMethod | string | 否 | 支付方式 |
 
 响应示例：
@@ -381,7 +354,7 @@ POST /api/orders
 ### 4.2 获取订单详情
 
 ```http
-GET /api/orders/{id}
+GET /orders/{id}
 ```
 
 路径参数：
@@ -421,7 +394,7 @@ GET /api/orders/{id}
 用于账户页后续展示订单历史。
 
 ```http
-GET /api/orders/me
+GET /orders/me
 ```
 
 请求头：
@@ -451,7 +424,7 @@ Authorization: Bearer <token>
 ### 5.1 用户登录
 
 ```http
-POST /api/auth/login
+POST /auth/login
 ```
 
 请求体：
@@ -479,7 +452,7 @@ POST /api/auth/login
 ### 5.2 获取当前用户信息
 
 ```http
-GET /api/users/me
+GET /users/me
 ```
 
 请求头：
@@ -501,7 +474,7 @@ Authorization: Bearer <token>
 ### 5.3 添加收藏
 
 ```http
-POST /api/wishlist
+POST /wishlist
 ```
 
 请求头：
@@ -530,7 +503,7 @@ Authorization: Bearer <token>
 ### 5.4 取消收藏
 
 ```http
-DELETE /api/wishlist/{artworkId}
+DELETE /wishlist/{artworkId}
 ```
 
 响应示例：
@@ -545,7 +518,7 @@ DELETE /api/wishlist/{artworkId}
 ### 5.5 获取我的收藏
 
 ```http
-GET /api/wishlist/me
+GET /wishlist/me
 ```
 
 响应示例：
@@ -567,33 +540,33 @@ GET /api/wishlist/me
 
 | 页面 | 路由 | 需要接口 |
 | --- | --- | --- |
-| 首页 | `/` | 暂用静态数据；后续可调用 `GET /api/artworks?sort=trending` |
-| 浏览页 | `/browse` | `GET /api/artworks` |
-| 搜索结果 | `/browse?q=xxx` | `GET /api/artworks?q=xxx` 或 `GET /api/artworks/search?q=xxx` |
-| 作品详情 | `/artwork/:id` | `GET /api/artworks/{id}` |
-| 相关推荐 | `/artwork/:id` | `GET /api/artworks/{id}/recommendations` |
-| 购物车 | `/cart` | 本地状态；结算时调用 `POST /api/orders` |
-| 账户页 | `/account` | 后续调用 `GET /api/users/me`、`GET /api/orders/me` |
+| 首页 | `/` | 暂用静态数据；后续可调用 `GET /artworks?sort=trending` |
+| 浏览页 | `/browse` | `GET /artworks` |
+| 搜索结果 | `/browse?q=xxx` | `GET /artworks?q=xxx` |
+| 作品详情 | `/artwork/:id` | `GET /artworks/{id}` |
+| 相关推荐 | `/artwork/:id` | `GET /artworks/{id}/recommendations` |
+| 购物车 | `/cart` | 本地状态；结算时调用 `POST /orders/create` |
+| 账户页 | `/account` | 后续调用 `GET /users/me`、`GET /orders/me` |
 
 ## 7. 后端最少需要先实现的接口
 
 为了让当前前端从静态数据切换到真实数据，建议先实现下面 4 个接口：
 
 ```text
-GET  /api/artworks
-GET  /api/artworks/{id}
-GET  /api/artworks/{id}/recommendations
-POST /api/orders
+GET  /artworks
+GET  /artworks/{id}
+GET  /artworks/{id}/recommendations
+POST /orders/create
 ```
 
 之后再补：
 
 ```text
-GET /api/orders/{id}
-GET /api/orders/me
-POST /api/auth/login
-GET /api/users/me
-POST /api/wishlist
-DELETE /api/wishlist/{artworkId}
-GET /api/wishlist/me
+GET /orders/{id}
+GET /orders/me
+POST /auth/login
+GET /users/me
+POST /wishlist
+DELETE /wishlist/{artworkId}
+GET /wishlist/me
 ```

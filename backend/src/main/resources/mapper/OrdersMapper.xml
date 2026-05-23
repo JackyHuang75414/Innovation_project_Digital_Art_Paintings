@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ren.yinghui.backend.mapper.OrdersMapper">
+
+    <select id="findArtworkById" resultType="com.ren.yinghui.backend.entity.Artwork">
+        SELECT
+            id,
+            artist_id,
+            category_id,
+            title,
+            image_url,
+            price,
+            medium,
+            orientation,
+            dominant_color,
+            dimensions,
+            year,
+            description,
+            badge,
+            stock_quantity,
+            view_count,
+            sold_count,
+            is_active AS active,
+            created_at,
+            updated_at
+        FROM artworks
+        WHERE id = #{artworkId}
+    </select>
+
+    <select id="findArtistById" resultType="com.ren.yinghui.backend.entity.Artist">
+        SELECT
+            id,
+            name,
+            country,
+            bio,
+            avatar_url,
+            created_at,
+            updated_at
+        FROM artists
+        WHERE id = #{artistId}
+    </select>
+
+    <select id="findArtworkSizeByArtworkIdAndSizeName" resultType="com.ren.yinghui.backend.entity.ArtworkSize">
+        SELECT
+            arts.artwork_id,
+            arts.size_id,
+            arts.price_override,
+            arts.is_available AS available
+        FROM artwork_sizes arts
+        JOIN sizes s ON arts.size_id = s.id
+        WHERE arts.artwork_id = #{artworkId}
+          AND s.name = #{sizeName}
+    </select>
+
+    <select id="findSizeById" resultType="com.ren.yinghui.backend.entity.SizeOption">
+        SELECT
+            id,
+            name,
+            price_delta,
+            sort_order,
+            created_at
+        FROM sizes
+        WHERE id = #{sizeId}
+    </select>
+
+    <insert id="insertOrder" parameterType="com.ren.yinghui.backend.entity.Order"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO orders (
+            order_no,
+            user_id,
+            status,
+            customer_name,
+            customer_email,
+            customer_phone,
+            shipping_country,
+            shipping_city,
+            shipping_address_line1,
+            shipping_address_line2,
+            shipping_postal_code,
+            payment_method,
+            subtotal,
+            shipping_fee,
+            total,
+            created_at,
+            updated_at
+        ) VALUES (
+            #{orderNo},
+            #{userId},
+            #{status},
+            #{customerName},
+            #{customerEmail},
+            #{customerPhone},
+            #{shippingCountry},
+            #{shippingCity},
+            #{shippingAddressLine1},
+            #{shippingAddressLine2},
+            #{shippingPostalCode},
+            #{paymentMethod},
+            #{subtotal},
+            #{shippingFee},
+            #{total},
+            #{createdAt},
+            #{updatedAt}
+        )
+    </insert>
+
+    <insert id="insertOrderItem" parameterType="com.ren.yinghui.backend.entity.OrderItem"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO order_items (
+            order_id,
+            artwork_id,
+            artwork_title,
+            artwork_image_url,
+            artist_name,
+            size_name,
+            quantity,
+            unit_price,
+            subtotal,
+            created_at
+        ) VALUES (
+            #{orderId},
+            #{artworkId},
+            #{artworkTitle},
+            #{artworkImageUrl},
+            #{artistName},
+            #{sizeName},
+            #{quantity},
+            #{unitPrice},
+            #{subtotal},
+            #{createdAt}
+        )
+    </insert>
+</mapper>
