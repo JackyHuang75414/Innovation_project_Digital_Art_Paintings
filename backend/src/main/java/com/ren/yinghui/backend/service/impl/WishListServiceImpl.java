@@ -32,6 +32,16 @@ public class WishListServiceImpl implements WishListService {
         return vo;
     }
 
+    @Override
+    public WishlistStatusVO remove(Long artworkId) {
+        wishListMapper.deleteByUserIdAndArtworkId(getCurrentUserId(), artworkId);
+
+        WishlistStatusVO vo = new WishlistStatusVO();
+        vo.setArtworkId(artworkId);
+        vo.setWishlisted(false);
+        return vo;
+    }
+
     private Long getCurrentUserId() {
         Map<String, Object> claims = ThreadLocalUtil.get();
         Object userId = claims.get("id");

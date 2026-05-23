@@ -527,8 +527,14 @@ Authorization: <token>
 ### 5.5 取消收藏
 
 ```http
-DELETE /wishlist/{artworkId}
+DELETE /wishlist?artworkId=1
 ```
+
+请求参数：
+
+| 参数 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| artworkId | number | 是 | 作品 ID |
 
 响应示例：
 
@@ -591,6 +597,6 @@ GET /orders/me
 POST /auth/login
 GET /user/me
 POST /wishlist
-DELETE /wishlist/{artworkId}
+DELETE /wishlist?artworkId=1
 GET /wishlist/me
 ```

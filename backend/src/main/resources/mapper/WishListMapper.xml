@@ -20,4 +20,10 @@
             #{artworkId}
         )
     </insert>
+
+    <delete id="deleteByUserIdAndArtworkId">
+        DELETE FROM wishlist_items
+        WHERE user_id = #{userId}
+          AND artwork_id = #{artworkId}
+    </delete>
 </mapper>

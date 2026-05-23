@@ -6,9 +6,11 @@ import com.ren.yinghui.backend.vo.Result;
 import com.ren.yinghui.backend.vo.WishlistStatusVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -24,6 +26,13 @@ public class WishListController {
     @PostMapping
     public Result<WishlistStatusVO> add(@RequestBody @Validated AddWishlistDTO dto) {
         WishlistStatusVO result = wishListService.add(dto);
+        return Result.success(result);
+    }
+
+    //remove wishlist
+    @DeleteMapping
+    public Result<WishlistStatusVO> remove(@RequestParam Long artworkId) {
+        WishlistStatusVO result = wishListService.remove(artworkId);
         return Result.success(result);
     }
 }
