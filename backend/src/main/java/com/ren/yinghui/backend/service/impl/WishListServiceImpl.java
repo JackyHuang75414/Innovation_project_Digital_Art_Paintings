@@ -4,10 +4,12 @@ import com.ren.yinghui.backend.dto.AddWishlistDTO;
 import com.ren.yinghui.backend.mapper.WishListMapper;
 import com.ren.yinghui.backend.service.WishListService;
 import com.ren.yinghui.backend.utils.ThreadLocalUtil;
+import com.ren.yinghui.backend.vo.ArtworkListVO;
 import com.ren.yinghui.backend.vo.WishlistStatusVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -40,6 +42,11 @@ public class WishListServiceImpl implements WishListService {
         vo.setArtworkId(artworkId);
         vo.setWishlisted(false);
         return vo;
+    }
+
+    @Override
+    public List<ArtworkListVO> findMyWishlist() {
+        return wishListMapper.findByUserId(getCurrentUserId());
     }
 
     private Long getCurrentUserId() {
