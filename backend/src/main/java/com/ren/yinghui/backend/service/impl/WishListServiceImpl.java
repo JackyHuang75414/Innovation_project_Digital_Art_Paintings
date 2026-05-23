@@ -1,6 +1,5 @@
 package com.ren.yinghui.backend.service.impl;
 
-import com.ren.yinghui.backend.dto.AddWishlistDTO;
 import com.ren.yinghui.backend.mapper.WishListMapper;
 import com.ren.yinghui.backend.service.WishListService;
 import com.ren.yinghui.backend.utils.ThreadLocalUtil;
@@ -21,15 +20,15 @@ public class WishListServiceImpl implements WishListService {
     }
 
     @Override
-    public WishlistStatusVO add(AddWishlistDTO dto) {
-        if (wishListMapper.existsActiveArtwork(dto.getArtworkId()) == 0) {
+    public WishlistStatusVO add(Long artworkId) {
+        if (wishListMapper.existsActiveArtwork(artworkId) == 0) {
             throw new RuntimeException("artwork not found");
         }
 
-        wishListMapper.insertIfNotExists(getCurrentUserId(), dto.getArtworkId());
+        wishListMapper.insertIfNotExists(getCurrentUserId(), artworkId);
 
         WishlistStatusVO vo = new WishlistStatusVO();
-        vo.setArtworkId(dto.getArtworkId());
+        vo.setArtworkId(artworkId);
         vo.setWishlisted(true);
         return vo;
     }

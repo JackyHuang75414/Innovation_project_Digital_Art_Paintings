@@ -498,7 +498,7 @@ Authorization: <token>
 ### 5.4 添加收藏
 
 ```http
-POST /wishlist
+POST /wishlist?artworkId=1
 ```
 
 请求头：
@@ -507,13 +507,11 @@ POST /wishlist
 Authorization: <token>
 ```
 
-请求体：
+请求参数：
 
-```json
-{
-  "artworkId": 1
-}
-```
+| 参数 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| artworkId | number | 是 | 作品 ID |
 
 响应示例：
 
@@ -596,7 +594,7 @@ GET /orders/{id}
 GET /orders/me
 POST /auth/login
 GET /user/me
-POST /wishlist
+POST /wishlist?artworkId=1
 DELETE /wishlist?artworkId=1
 GET /wishlist/me
 ```
