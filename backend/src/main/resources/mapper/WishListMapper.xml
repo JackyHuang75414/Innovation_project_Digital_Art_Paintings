@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ren.yinghui.backend.mapper.WishListMapper">
+
+    <select id="existsActiveArtwork" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM artworks
+        WHERE id = #{artworkId}
+          AND is_active = 1
+    </select>
+
+    <insert id="insertIfNotExists">
+        INSERT IGNORE INTO wishlist_items (
+            user_id,
+            artwork_id
+        ) VALUES (
+            #{userId},
+            #{artworkId}
+        )
+    </insert>
+</mapper>
