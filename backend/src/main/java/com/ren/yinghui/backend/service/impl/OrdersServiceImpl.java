@@ -6,6 +6,7 @@ import com.ren.yinghui.backend.entity.*;
 import com.ren.yinghui.backend.mapper.OrdersMapper;
 import com.ren.yinghui.backend.service.OrdersService;
 import com.ren.yinghui.backend.vo.OrderCreateVO;
+import com.ren.yinghui.backend.vo.OrderDetailVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -112,6 +113,16 @@ public class OrdersServiceImpl implements OrdersService {
         vo.setTotal(order.getTotal());
         vo.setCreatedAt(order.getCreatedAt());
         return vo;
+    }
+
+    @Override
+    public OrderDetailVO findDetailById(Long id) {
+        OrderDetailVO order = ordersMapper.findDetailById(id);
+        if (order == null) {
+            return null;
+        }
+        order.setItems(ordersMapper.findItemsByOrderId(id));
+        return order;
     }
 
     private BigDecimal calculateShippingFee(BigDecimal subtotal) {

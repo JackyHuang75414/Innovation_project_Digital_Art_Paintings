@@ -132,4 +132,32 @@
             #{createdAt}
         )
     </insert>
+
+    <select id="findDetailById" resultType="com.ren.yinghui.backend.vo.OrderDetailVO">
+        SELECT
+            id,
+            order_no,
+            status,
+            subtotal,
+            shipping_fee,
+            total,
+            created_at
+        FROM orders
+        WHERE id = #{id}
+    </select>
+
+    <select id="findItemsByOrderId" resultType="com.ren.yinghui.backend.vo.OrderDetailItemVO">
+        SELECT
+            artwork_id,
+            artwork_title AS title,
+            artwork_image_url AS image_url,
+            artist_name,
+            size_name AS size,
+            quantity,
+            unit_price,
+            subtotal
+        FROM order_items
+        WHERE order_id = #{orderId}
+        ORDER BY id ASC
+    </select>
 </mapper>

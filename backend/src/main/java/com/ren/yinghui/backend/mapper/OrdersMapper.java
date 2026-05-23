@@ -1,8 +1,12 @@
 package com.ren.yinghui.backend.mapper;
 
 import com.ren.yinghui.backend.entity.*;
+import com.ren.yinghui.backend.vo.OrderDetailItemVO;
+import com.ren.yinghui.backend.vo.OrderDetailVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 @Mapper
 public interface OrdersMapper {
@@ -17,4 +21,8 @@ public interface OrdersMapper {
     int insertOrder(Order order);
 
     int insertOrderItem(OrderItem orderItem);
+
+    OrderDetailVO findDetailById(Long id);
+
+    List<OrderDetailItemVO> findItemsByOrderId(Long orderId);
 }
