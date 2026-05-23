@@ -1,6 +1,7 @@
 package com.ren.yinghui.backend.service;
 
 import com.ren.yinghui.backend.entity.User;
+import com.ren.yinghui.backend.vo.UserInfoVO;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 
@@ -16,4 +17,7 @@ public interface UserService {
 
     //check password
     boolean checkPassword(String password, String passwordHash);
+
+    //get current user info
+    UserInfoVO findCurrentUser();
 }

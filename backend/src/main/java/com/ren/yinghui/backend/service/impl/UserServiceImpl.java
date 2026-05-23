@@ -4,8 +4,12 @@ import com.ren.yinghui.backend.mapper.UserMapper;
 import com.ren.yinghui.backend.entity.User;
 import com.ren.yinghui.backend.service.UserService;
 import com.ren.yinghui.backend.utils.PasswordUtils;
+import com.ren.yinghui.backend.utils.ThreadLocalUtil;
+import com.ren.yinghui.backend.vo.UserInfoVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Map;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -36,5 +40,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean checkPassword(String password, String passwordHash) {
         return PasswordUtils.matches(password, passwordHash);
+    }
+
+    @Override
+    public UserInfoVO findCurrentUser() {
+        Map<String, Object> claims = ThreadLocalUtil.get();
+        Object userId = claims.get("id");
+        Long id = userId instanceof Number number ? number.longValue() : Long.valueOf(userId.toString());
+        return userMapper.findUserInfoById(id);
     }
 }
