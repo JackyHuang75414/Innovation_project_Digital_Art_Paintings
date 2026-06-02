@@ -27,12 +27,14 @@ const artworkPool = [
 
 // ─── System prompt ────────────────────────────────────────────────────────────
 const SYSTEM_PROMPT = `You are ArtCanvas AI, a sophisticated art curator for a premium digital art marketplace.
-Help visitors discover artworks that match their aesthetic tastes and emotional needs.
+The visitor has already been welcomed — do NOT greet them or say "Welcome" again.
+Respond DIRECTLY and specifically to whatever the visitor says.
 Guidelines:
+- Always reference the visitor's exact words in your reply so they can see it is personalised.
 - Respond concisely in 2–3 elegant sentences.
-- Suggest specific styles, moods, colours, or techniques the visitor might enjoy.
+- Recommend a specific style, mood, colour palette, or technique that matches their taste.
 - Maintain a warm, knowledgeable tone befitting a luxury gallery.
-- After your recommendation, naturally mention you will show some matching works.
+- End by naturally mentioning you will show some matching works.
 Available categories: Oil, Watercolour, Acrylic, Digital Art, Photography, Ink.`
 
 // ─── Conversation state ───────────────────────────────────────────────────────
@@ -57,6 +59,8 @@ function scrollToBottom() {
 
 // ─── DeepSeek API call (OpenAI-compatible) ───────────────────────────────────
 async function callLLM(userText) {
+  console.log('[AI] → sending to DeepSeek, history length:', apiHistory.length)
+
   const res = await fetch('/llm-api/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -71,15 +75,44 @@ async function callLLM(userText) {
     }),
   })
 
+  console.log('[AI] ← HTTP', res.status, res.headers.get('content-type'))
+
   if (!res.ok) {
     const raw = await res.text()
-    throw new Error(`DeepSeek ${res.status}: ${raw}`)
+    throw new Error(`DeepSeek ${res.status}: ${raw.slice(0, 300)}`)
+  }
+
+  // Guard: Vite may return index.html (text/html) if the proxy rule
+  // wasn't loaded (dev server not restarted after vite.config.js edit).
+  const contentType = res.headers.get('content-type') ?? ''
+  if (!contentType.includes('application/json')) {
+    const raw = await res.text()
+    throw new Error(
+      `Expected JSON but got "${contentType}". ` +
+      `Restart the Vite dev server so the /llm-api proxy takes effect. ` +
+      `Raw: ${raw.slice(0, 120)}`
+    )
   }
 
   const data = await res.json()
-  const text = data.choices?.[0]?.message?.content
-  if (!text) throw new Error('Unexpected response: ' + JSON.stringify(data).slice(0, 200))
+  console.log('[AI] raw response:', JSON.stringify(data).slice(0, 400))
 
+  const text =
+    data.choices?.[0]?.message?.content ??   // standard OpenAI / DeepSeek
+    data.choices?.[0]?.delta?.content ??      // streaming fallback
+    data.output?.text ??                      // some providers
+    null
+
+  if (text === null || text === undefined) {
+    throw new Error('Cannot parse response: ' + JSON.stringify(data).slice(0, 400))
+  }
+
+  // DeepSeek may return an empty string for refusals; show a fallback.
+  if (text.trim() === '') {
+    return "I'm sorry, I wasn't able to generate a recommendation. Please try rephrasing."
+  }
+
+  console.log('[AI] extracted text:', text.slice(0, 100))
   return text
 }
 
@@ -102,14 +135,15 @@ async function sendMessage() {
 
     // Pair AI text with 2 random artwork cards
     const picks = [...artworkPool].sort(() => Math.random() - 0.5).slice(0, 2)
-    messages.value.push({ role: 'ai', text: replyText, artworks: picks })
+    messages.value = [...messages.value, { role: 'ai', text: replyText, artworks: picks }]
+    console.log('[AI] message pushed, total:', messages.value.length)
   } catch (err) {
-    console.error('[AiRecommendChat] DeepSeek error:', err)
-    messages.value.push({
+    console.error('[AiRecommendChat] error:', err)
+    messages.value = [...messages.value, {
       role: 'error',
       text: String(err?.message || err),
       artworks: [],
-    })
+    }]
   } finally {
     isTyping.value = false
     scrollToBottom()
