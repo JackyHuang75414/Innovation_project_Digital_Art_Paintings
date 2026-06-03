@@ -15,14 +15,26 @@ const inputText = ref('')
 const isTyping = ref(false)
 const messagesEl = ref(null)
 
-// ─── Artwork pool (replace with real API data when backend is ready) ──────────
+// ─── Artwork pool — real NFT works from Wikimedia Commons ─────────────────────
 const artworkPool = [
-  { id: 1, imageUrl: 'https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?w=200&q=80', title: 'Golden Hour Reverie', artistName: 'Sophie Laurent', price: 89 },
-  { id: 2, imageUrl: 'https://images.unsplash.com/photo-1547826039-bfc35e0f1ea8?w=200&q=80', title: 'Urban Geometry III', artistName: 'Amara Diallo', price: 120 },
-  { id: 3, imageUrl: 'https://images.unsplash.com/photo-1620503374956-c942862f0372?w=200&q=80', title: 'Blue Silence', artistName: 'Marco Chen', price: 75 },
-  { id: 4, imageUrl: 'https://images.unsplash.com/photo-1605721911519-3dfeb3be25e7?w=200&q=80', title: 'Forest Dream', artistName: 'Jules Moreau', price: 65 },
-  { id: 5, imageUrl: 'https://images.unsplash.com/photo-1559762717-99c81ac85059?w=200&q=80', title: 'Desert Wind', artistName: 'Yuki Tanaka', price: 110 },
-  { id: 6, imageUrl: 'https://images.unsplash.com/photo-1579763902614-a3fb3927b6a5?w=200&q=80', title: 'Abstract Harmony', artistName: 'Lena Kuznetsov', price: 99 },
+  { id: 1,
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/en/thumb/d/d4/Everydays%2C_the_First_5000_Days.jpg/200px-Everydays%2C_the_First_5000_Days.jpg',
+    title: 'Everydays: The First 5000 Days', artistName: 'Beeple', price: 6900000 },
+  { id: 2,
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Right-Click_and_Save_as_Guy.gif/200px-Right-Click_and_Save_as_Guy.gif',
+    title: 'Right-click and Save As guy', artistName: 'Xcopy', price: 2800000 },
+  { id: 3,
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/A_Coin_for_the_Ferryman.gif/200px-A_Coin_for_the_Ferryman.gif',
+    title: 'A Coin for the Ferryman', artistName: 'Xcopy', price: 1920000 },
+  { id: 4,
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Pakpixel.jpg/200px-Pakpixel.jpg',
+    title: 'The Pixel', artistName: 'Pak', price: 3200000 },
+  { id: 5,
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Machine_Hallucinations-Artechouse_NYC_by_Refik_Anadol.jpg/200px-Machine_Hallucinations-Artechouse_NYC_by_Refik_Anadol.jpg',
+    title: 'Machine Hallucinations: NYC', artistName: 'Refik Anadol', price: 1400000 },
+  { id: 6,
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Unsupervised_by_Refik_Anadol.jpg/200px-Unsupervised_by_Refik_Anadol.jpg',
+    title: 'Unsupervised', artistName: 'Refik Anadol', price: 880000 },
 ]
 
 // ─── System prompt ────────────────────────────────────────────────────────────
@@ -168,7 +180,7 @@ function open() {
   <Transition name="btn-fade">
     <button
       v-if="!isOpen"
-      class="fixed bottom-6 right-6 z-[9998] flex items-center gap-2.5 bg-[#E8552A] hover:bg-[#d4461c] text-white pl-4 pr-5 py-3 shadow-xl hover:shadow-2xl transition-all duration-200 focus:outline-none"
+      class="fixed bottom-6 right-6 z-[9998] flex items-center gap-2.5 bg-[#E8552A] hover:bg-[#d4461c] text-white pl-4 pr-5 py-3 shadow-[0_0_30px_rgba(232,85,42,0.35)] hover:shadow-[0_0_40px_rgba(232,85,42,0.5)] transition-all duration-200 focus:outline-none"
       aria-label="Open AI art curator"
       @click="open"
     >
@@ -185,7 +197,7 @@ function open() {
   <Transition name="panel">
     <div
       v-if="isOpen"
-      class="fixed bottom-6 right-6 z-[9999] w-[22rem] flex flex-col bg-white shadow-2xl border border-gray-200"
+      class="fixed bottom-6 right-6 z-[9999] w-[22rem] flex flex-col bg-[#0f0f13] shadow-2xl border border-white/[0.1]"
       style="max-height: min(80vh, 600px)"
       role="dialog"
       aria-label="AI Art Curator"
@@ -208,7 +220,7 @@ function open() {
       </div>
 
       <!-- Message thread -->
-      <div ref="messagesEl" class="flex-1 overflow-y-auto px-4 py-5 space-y-5 min-h-0">
+      <div ref="messagesEl" class="flex-1 overflow-y-auto px-4 py-5 space-y-5 min-h-0 bg-[#0f0f13]">
         <div
           v-for="(msg, i) in messages"
           :key="i"
@@ -227,28 +239,30 @@ function open() {
 
             <!-- AI bubble -->
             <template v-else-if="msg.role === 'ai'">
-              <p class="text-sm text-gray-700 font-light leading-relaxed">{{ msg.text }}</p>
+              <p class="text-sm text-gray-300 font-light leading-relaxed">{{ msg.text }}</p>
               <div v-if="msg.artworks?.length" class="mt-3 space-y-2">
                 <RouterLink
                   v-for="art in msg.artworks"
                   :key="art.id"
-                  :to="`/artwork/${art.id}`"
-                  class="flex gap-3 bg-[#F7F4F0] hover:bg-[#EDE8E1] transition-colors p-2.5 group"
+                  :to="`/trade/${art.id}`"
+                  class="flex gap-3 bg-[#111116] border border-white/[0.08] hover:border-white/20 transition-colors p-2.5 group"
                   @click="isOpen = false"
                 >
                   <img
                     :src="art.imageUrl"
                     :alt="art.title"
-                    class="w-14 h-14 object-cover flex-shrink-0"
+                    class="w-14 h-14 object-cover flex-shrink-0 bg-[#0d0d10]"
                     loading="lazy"
                   />
                   <div class="min-w-0 flex flex-col justify-center gap-0.5">
-                    <p class="font-display italic text-sm text-gray-900 leading-tight line-clamp-2">{{ art.title }}</p>
-                    <p class="text-[10px] tracking-[0.15em] uppercase text-gray-400 font-light">{{ art.artistName }}</p>
-                    <p class="text-xs font-medium text-gray-900">€{{ art.price }}</p>
+                    <p class="font-display italic text-sm text-gray-100 leading-tight line-clamp-2">{{ art.title }}</p>
+                    <p class="text-[10px] tracking-[0.15em] uppercase text-gray-500 font-light">{{ art.artistName }}</p>
+                    <p class="text-[10px] font-mono text-gray-400">
+                      MCap ${{ art.price >= 1e6 ? (art.price / 1e6).toFixed(2) + 'M' : (art.price / 1e3).toFixed(0) + 'K' }}
+                    </p>
                   </div>
                   <div class="flex items-center ml-auto pl-1 flex-shrink-0">
-                    <svg class="w-3.5 h-3.5 text-gray-300 group-hover:text-[#E8552A] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-3.5 h-3.5 text-gray-700 group-hover:text-[#E8552A] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
                     </svg>
                   </div>
@@ -258,9 +272,7 @@ function open() {
 
             <!-- User bubble -->
             <template v-else-if="msg.role === 'user'">
-              <p class="text-sm text-white bg-[#E8552A] px-3.5 py-2.5 font-light leading-relaxed inline-block">
-                {{ msg.text }}
-              </p>
+              <p class="text-sm text-white bg-[#E8552A] px-3.5 py-2.5 font-light leading-relaxed inline-block">{{ msg.text }}</p>
             </template>
           </div>
         </div>
@@ -276,18 +288,18 @@ function open() {
       </div>
 
       <!-- Divider -->
-      <div class="h-px bg-gray-100 flex-shrink-0" />
+      <div class="h-px bg-white/[0.07] flex-shrink-0" />
 
       <!-- Input bar -->
       <form
-        class="flex items-center flex-shrink-0 bg-white"
+        class="flex items-center flex-shrink-0 bg-[#0f0f13]"
         @submit.prevent="sendMessage"
       >
         <input
           v-model="inputText"
           type="text"
           placeholder="Describe your taste…"
-          class="flex-1 px-4 py-3.5 text-sm outline-none placeholder:text-gray-300 font-light bg-transparent"
+          class="flex-1 px-4 py-3.5 text-sm outline-none placeholder:text-gray-600 font-light bg-transparent text-gray-200"
           :disabled="isTyping"
           @keydown="handleKeydown"
         />

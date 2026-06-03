@@ -1,98 +1,141 @@
 <script setup>
-import { ref } from 'vue'
-import ArtworkCard from '@/components/artwork/ArtworkCard.vue'
-import ArtworkFilters from '@/components/artwork/ArtworkFilters.vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { RouterLink } from 'vue-router'
+import { useTradingStore, TOTAL_SHARES } from '@/stores/trading'
+import { usePricesStore } from '@/stores/prices'
+import CryptoPriceBadge from '@/components/ui/CryptoPriceBadge.vue'
 
-const filtersOpen = ref(false)
+const store  = useTradingStore()
+const prices = usePricesStore()
+onMounted(() => { store.init(); prices.startPolling() })
+onUnmounted(() => prices.stopPolling())
 
-// Placeholder data — replace with useArtworksStore + API call
-const artworks = ref([
-  { id: 1,  imageUrl: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=500', title: 'Abstract Harmony',  artistName: 'Sophie Laurent',  price: 89,  medium: 'Acrylic' },
-  { id: 2,  imageUrl: 'https://images.unsplash.com/photo-1547826039-bfc35e0f1ea8?w=500', title: 'Urban Geometry',     artistName: 'Marco Chen',       price: 120, medium: 'Digital',    badge: 'New' },
-  { id: 3,  imageUrl: 'https://images.unsplash.com/photo-1620503374956-c942862f0372?w=500', title: 'Blue Silence',       artistName: 'Amara Diallo',     price: 75,  medium: 'Oil' },
-  { id: 4,  imageUrl: 'https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?w=500', title: 'Golden Hour',        artistName: 'Lena Kuznetsov',   price: 99,  medium: 'Photograph' },
-  { id: 5,  imageUrl: 'https://images.unsplash.com/photo-1605721911519-3dfeb3be25e7?w=500', title: 'Forest Dream',       artistName: 'Jules Moreau',     price: 65,  medium: 'Watercolour', badge: 'Trending' },
-  { id: 6,  imageUrl: 'https://images.unsplash.com/photo-1559762717-99c81ac85059?w=500', title: 'Desert Wind',        artistName: 'Yuki Tanaka',      price: 110, medium: 'Ink' },
-  { id: 7,  imageUrl: 'https://images.unsplash.com/photo-1531913223931-b0d3198229ee?w=500', title: 'Night Garden',       artistName: 'Elif Yıldız',      price: 85,  medium: 'Oil' },
-  { id: 8,  imageUrl: 'https://images.unsplash.com/photo-1549490349-8643362247b5?w=500', title: 'Soft Focus',         artistName: 'Kai Bergström',    price: 55,  medium: 'Photograph' },
-  { id: 9,  imageUrl: 'https://images.unsplash.com/photo-1574169208507-84376144848b?w=500', title: 'Crimson Flow',       artistName: 'Nadia Rousseau',   price: 145, medium: 'Acrylic',    badge: 'Limited' },
-  { id: 10, imageUrl: 'https://images.unsplash.com/photo-1605108040932-db63d52c4d88?w=500', title: 'Still Waters',       artistName: 'Tomás García',     price: 79,  medium: 'Watercolour' },
-  { id: 11, imageUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500', title: 'Electric Sky',       artistName: 'Priya Nair',       price: 95,  medium: 'Digital' },
-  { id: 12, imageUrl: 'https://images.unsplash.com/photo-1561214115-f2f134cc4912?w=500', title: 'Clay Forms',         artistName: 'Hassan Al-Farsi',  price: 130, medium: 'Photograph' },
-])
+const sortBy  = ref('mcap')   // 'mcap' | 'change_asc' | 'change_desc' | 'volume'
+const search  = ref('')
 
-function onFiltersUpdate(newFilters) {
-  // TODO: call useArtworksStore().fetchAll(newFilters)
-}
+const SORTS = [
+  { key: 'mcap',        label: 'Market Cap' },
+  { key: 'change_desc', label: 'Gainers First' },
+  { key: 'change_asc',  label: 'Losers First'  },
+  { key: 'volume',      label: 'Volume'       },
+]
+
+const rows = computed(() => {
+  let list = store.ARTWORKS.map(a => ({
+    ...a,
+    price:   store.prices[a.id] ?? a.initPrice,
+    mcapUsd: (store.prices[a.id] ?? a.initPrice) * TOTAL_SHARES,
+    chg:     store.priceChange(a.id),
+    vol:     store.volume24h(a.id),
+  }))
+
+  if (search.value.trim()) {
+    const q = search.value.toLowerCase()
+    list = list.filter(a => a.title.toLowerCase().includes(q) || a.artist.toLowerCase().includes(q))
+  }
+
+  if (sortBy.value === 'mcap')        list.sort((a, b) => b.mcapUsd - a.mcapUsd)
+  if (sortBy.value === 'change_desc') list.sort((a, b) => b.chg - a.chg)
+  if (sortBy.value === 'change_asc')  list.sort((a, b) => a.chg - b.chg)
+  if (sortBy.value === 'volume')      list.sort((a, b) => b.vol - a.vol)
+
+  return list
+})
 </script>
 
 <template>
   <!-- Page header -->
-  <div class="bg-[#F7F4F0] border-b border-[#E0D8CE]">
-    <div class="max-w-screen-xl mx-auto px-6 lg:px-16 py-10 lg:py-14">
-      <p class="text-[10px] tracking-[0.35em] uppercase text-[#E8552A] mb-3 font-light">Collection</p>
-      <div class="flex items-end justify-between gap-4">
-        <h1 class="font-display text-3xl lg:text-[2.75rem] font-normal italic text-gray-900 leading-tight">
-          All Works
-        </h1>
-        <!-- Mobile filter toggle -->
+  <div class="border-b border-white/[0.06]">
+    <div class="max-w-screen-xl mx-auto px-6 lg:px-16 pt-10 pb-8">
+      <p class="text-[10px] tracking-[0.35em] uppercase text-[#E8552A] mb-3 font-light">Explore</p>
+      <h1 class="font-display text-3xl lg:text-[2.5rem] font-normal italic text-white leading-tight mb-1">
+        Discover Works
+      </h1>
+      <p class="text-sm text-gray-500 font-light">{{ store.ARTWORKS.length }} artworks listed · all prices live</p>
+    </div>
+  </div>
+
+  <div class="max-w-screen-xl mx-auto px-6 lg:px-16 py-8">
+    <!-- Controls -->
+    <div class="flex flex-wrap items-center gap-3 mb-8">
+      <!-- Search -->
+      <div class="relative flex-1 min-w-[200px] max-w-xs">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+        </svg>
+        <input
+          v-model="search"
+          type="text"
+          placeholder="Search artworks, artists..."
+          class="w-full bg-[#111116] border border-white/[0.08] text-gray-200 pl-9 pr-3 py-2 text-sm outline-none focus:border-white/20 placeholder:text-gray-600"
+        />
+      </div>
+
+      <!-- Sort chips -->
+      <div class="flex items-center gap-2 flex-wrap">
         <button
-          class="lg:hidden inline-flex items-center gap-2 text-[11px] tracking-[0.2em] uppercase text-gray-600 hover:text-gray-900 border border-gray-300 hover:border-gray-900 px-4 py-2.5 transition-colors font-light"
-          @click="filtersOpen = true"
-        >
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 4h18M7 8h10M11 12h4" />
-          </svg>
-          Refine
-        </button>
+          v-for="s in SORTS" :key="s.key"
+          class="text-[10px] tracking-[0.15em] uppercase px-3 py-1.5 border transition-colors"
+          :class="sortBy === s.key
+            ? 'border-[#E8552A] text-[#E8552A] bg-[#E8552A]/10'
+            : 'border-white/[0.08] text-gray-500 hover:text-gray-300 hover:border-white/20'"
+          @click="sortBy = s.key"
+        >{{ s.label }}</button>
       </div>
-      <p class="text-[11px] text-gray-400 font-light mt-3 tracking-wide">{{ artworks.length }} works available</p>
+    </div>
+
+    <!-- Artwork grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <RouterLink
+        v-for="art in rows" :key="art.id"
+        :to="`/trade/${art.id}`"
+        class="card-dark group overflow-hidden flex flex-col"
+      >
+        <!-- Image -->
+        <div class="relative overflow-hidden aspect-[4/3] bg-[#0d0d10]">
+          <img
+            :src="art.imageUrl.replace('w=400', 'w=700')"
+            :alt="art.title"
+            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+            loading="lazy"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+
+          <!-- 24h change badge -->
+          <span
+            class="absolute top-3 right-3 text-[10px] font-mono px-2 py-0.5 border"
+            :class="art.chg >= 0
+              ? 'bg-green-500/20 text-green-400 border-green-500/30'
+              : 'bg-red-500/20 text-red-400 border-red-500/30'"
+          >
+            {{ art.chg >= 0 ? '+' : '' }}{{ art.chg.toFixed(2) }}%
+          </span>
+        </div>
+
+        <!-- Info -->
+        <div class="p-4 flex flex-col gap-1 flex-1">
+          <p class="text-[10px] tracking-[0.18em] uppercase text-gray-600 font-light">{{ art.artist }}</p>
+          <p class="font-display italic text-gray-100 text-base leading-snug mb-1">{{ art.title }}</p>
+
+          <!-- Market cap price -->
+          <div class="flex items-end justify-between mt-auto pt-3 border-t border-white/[0.05]">
+            <div>
+              <p class="text-[9px] tracking-[0.2em] uppercase text-gray-600 mb-0.5">Market Cap</p>
+              <CryptoPriceBadge :usd-value="art.mcapUsd" />
+            </div>
+            <div class="text-right">
+              <p class="text-[9px] tracking-[0.2em] uppercase text-gray-600 mb-0.5">Per Share</p>
+              <span class="font-mono text-xs text-gray-300">{{ prices.formatCrypto(art.price) }}</span>
+            </div>
+          </div>
+        </div>
+      </RouterLink>
+    </div>
+
+    <!-- Empty state -->
+    <div v-if="rows.length === 0" class="py-24 text-center">
+      <p class="font-display italic text-gray-600 text-2xl">No works found</p>
+      <button class="mt-4 text-[11px] tracking-[0.15em] uppercase text-[#E8552A]" @click="search = ''">Clear search</button>
     </div>
   </div>
-
-  <div class="max-w-screen-xl mx-auto px-6 lg:px-16 py-10 lg:py-14">
-    <div class="flex gap-12">
-      <!-- Sidebar filters (desktop) -->
-      <div class="hidden lg:block w-52 flex-shrink-0 pt-1">
-        <ArtworkFilters @update:filters="onFiltersUpdate" />
-      </div>
-
-      <!-- Masonry grid -->
-      <div class="flex-1">
-        <div class="masonry">
-          <ArtworkCard v-for="artwork in artworks" :key="artwork.id" :artwork="artwork" />
-        </div>
-
-        <!-- Load more -->
-        <div class="text-center mt-14">
-          <button class="text-[11px] tracking-[0.25em] uppercase text-gray-500 hover:text-gray-900 border border-gray-300 hover:border-gray-900 px-10 py-3 transition-colors font-light">
-            Load More
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Mobile filter drawer -->
-  <Transition name="slide">
-    <div v-if="filtersOpen" class="fixed inset-0 z-50 flex">
-      <div class="absolute inset-0 bg-black/40" @click="filtersOpen = false" />
-      <div class="relative ml-auto w-72 bg-white h-full overflow-y-auto p-8 shadow-2xl">
-        <div class="flex items-center justify-between mb-8">
-          <p class="text-[11px] tracking-[0.3em] uppercase text-gray-900 font-light">Refine</p>
-          <button class="text-gray-400 hover:text-gray-900 transition-colors" @click="filtersOpen = false">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18 18 6M6 6l12 12"/>
-            </svg>
-          </button>
-        </div>
-        <ArtworkFilters @update:filters="onFiltersUpdate" />
-      </div>
-    </div>
-  </Transition>
 </template>
-
-<style scoped>
-.slide-enter-active, .slide-leave-active { transition: transform 0.3s ease; }
-.slide-enter-from, .slide-leave-to { transform: translateX(100%); }
-</style>
