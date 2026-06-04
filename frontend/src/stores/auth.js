@@ -12,6 +12,7 @@ export const DEMO_ACCOUNTS = [
     startUsd: 10_000,
     startBtc: 0.5,
     bio: 'New to crypto art trading. Starting with a balanced portfolio.',
+    isPaid: false,
   },
   {
     id: 2,
@@ -23,6 +24,7 @@ export const DEMO_ACCOUNTS = [
     startUsd: 200_000,
     startBtc: 3.0,
     bio: 'High-conviction NFT collector. Focus on blue-chip digital works.',
+    isPaid: true,
   },
   {
     id: 3,
@@ -34,6 +36,7 @@ export const DEMO_ACCOUNTS = [
     startUsd: 50_000,
     startBtc: 1.2,
     bio: 'Fully automated. All positions managed by AI agents.',
+    isPaid: true,
   },
 ]
 
@@ -44,6 +47,7 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref(_saved ? JSON.parse(_saved) : null)
 
   const isLoggedIn  = computed(() => !!user.value)
+  const isPaid      = computed(() => !!user.value?.isPaid)
   const displayName = computed(() => user.value?.displayName ?? '')
   const initials    = computed(() => user.value?.initials ?? '')
   const color       = computed(() => user.value?.color ?? '#E8552A')
@@ -63,6 +67,7 @@ export const useAuthStore = defineStore('auth', () => {
       bio: account.bio,
       startUsd: account.startUsd,
       startBtc: account.startBtc,
+      isPaid: account.isPaid,
     }
     user.value = profile
     localStorage.setItem(STORAGE_KEY, JSON.stringify(profile))
@@ -78,5 +83,5 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem(STORAGE_KEY)
   }
 
-  return { user, isLoggedIn, displayName, initials, color, login, loginAsGuest, logout, DEMO_ACCOUNTS }
+  return { user, isLoggedIn, isPaid, displayName, initials, color, login, loginAsGuest, logout, DEMO_ACCOUNTS }
 })
