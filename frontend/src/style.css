@@ -2,7 +2,7 @@
 
 @layer base {
   body {
-    @apply bg-white text-gray-900 antialiased;
+    @apply bg-[#09090b] text-gray-100 antialiased;
     font-family: 'Inter', system-ui, sans-serif;
     font-weight: 400;
     -webkit-font-smoothing: antialiased;
@@ -12,6 +12,10 @@
     display: flex;
     flex-direction: column;
   }
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #2a2a35; border-radius: 2px; }
 }
 
 @layer utilities {
@@ -20,16 +24,21 @@
     font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
   }
 
-  /* Primary CTA — refined, minimal rounded corners, generous tracking */
+  /* Primary CTA */
   .btn-primary {
     @apply bg-[#E8552A] hover:bg-[#d4461c] text-white text-sm font-medium
            px-8 py-3 tracking-[0.1em] uppercase transition-colors duration-200 cursor-pointer;
   }
 
-  /* Outlined secondary button */
+  /* Outlined secondary button (dark site) */
   .btn-outline {
-    @apply border border-gray-900 hover:bg-gray-900 hover:text-white text-gray-900 text-sm font-medium
-           px-8 py-3 tracking-[0.1em] uppercase transition-colors duration-200 cursor-pointer bg-white;
+    @apply border border-white/20 hover:border-white/50 hover:bg-white/5 text-gray-300 text-sm font-medium
+           px-8 py-3 tracking-[0.1em] uppercase transition-colors duration-200 cursor-pointer;
+  }
+
+  /* Dark glass card */
+  .card-dark {
+    @apply bg-[#111116] border border-white/[0.07] hover:border-white/[0.14] transition-colors;
   }
 
   /* Ghost link — text with animated underline (used on dark backgrounds) */

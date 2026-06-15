@@ -19,6 +19,13 @@ export default defineConfig(({ mode }) => {
         // Backend API
         '/api': 'http://localhost:8000',
 
+        // CoinGecko — live crypto prices (free, no key, bypasses CORS)
+        '/coingecko': {
+          target: 'https://api.coingecko.com',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/coingecko/, ''),
+        },
+
         // BlockCypher testnet — bypasses browser CORS
         '/blockcypher': {
           target: 'https://api.blockcypher.com',

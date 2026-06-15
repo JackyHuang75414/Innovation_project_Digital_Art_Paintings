@@ -4,7 +4,19 @@
       "Bash(npm run *)",
       "WebSearch",
       "Bash(npm install *)",
-      "Bash(Test-Path *)"
+      "Bash(Test-Path *)",
+      "WebFetch(domain:www.marieclaire.com.tw)",
+      "WebFetch(domain:www.maddogjones.com)",
+      "WebFetch(domain:xcopy.art)",
+      "WebFetch(domain:www.beeple-crap.com)",
+      "WebFetch(domain:en.wikipedia.org)",
+      "WebFetch(domain:hackatao.com)",
+      "WebFetch(domain:fewocious.com)",
+      "WebFetch(domain:superrare.com)",
+      "Bash(python -c \"import pptx; print\\('ok'\\)\")",
+      "Bash(pip install *)",
+      "Bash(python make_ppt.py)",
+      "Bash(python *)"
     ]
   }
 }
