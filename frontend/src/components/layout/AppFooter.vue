@@ -49,6 +49,27 @@
       </div>
     </div>
 
+    <!-- Sustainability banner -->
+    <div class="border-t border-green-500/10 bg-green-500/[0.03]">
+      <div class="max-w-screen-xl mx-auto px-6 lg:px-16 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse flex-shrink-0" />
+          <p class="text-[11px] text-green-600 font-light tracking-wide">
+            ArtEx is committed to zero Proof-of-Work transactions and 100% renewable energy hosting.
+          </p>
+        </div>
+        <a
+          href="/sustainability"
+          class="text-[10px] tracking-[0.2em] uppercase text-green-500 hover:text-green-300 transition-colors font-medium flex-shrink-0 flex items-center gap-1.5"
+        >
+          Our Environmental Commitments
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+
     <div class="border-t border-white/[0.04]">
       <div class="max-w-screen-xl mx-auto px-6 lg:px-16 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
         <p class="text-[10px] tracking-[0.2em] uppercase font-light">© 2025 ArtEx — EFREI Innovation Project</p>

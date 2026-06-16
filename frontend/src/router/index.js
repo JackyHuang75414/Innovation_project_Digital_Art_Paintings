@@ -44,6 +44,11 @@ const router = createRouter({
       name: 'trade',
       component: () => import('@/views/TradingView.vue'),
     },
+    {
+      path: '/sustainability',
+      name: 'sustainability',
+      component: () => import('@/views/SustainabilityView.vue'),
+    },
   ],
 })
 
