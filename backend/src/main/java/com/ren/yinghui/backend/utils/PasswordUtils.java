@@ -13,6 +13,9 @@ public class PasswordUtils {
     }
 
     public static boolean matches(String rawPassword, String encodedPassword) {
+        if (rawPassword == null || encodedPassword == null || encodedPassword.isBlank()) {
+            return false;
+        }
         return PASSWORD_ENCODER.matches(rawPassword, encodedPassword);
     }
 }

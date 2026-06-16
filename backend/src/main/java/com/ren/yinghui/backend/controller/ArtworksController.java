@@ -25,15 +25,15 @@ public class ArtworksController {
     }
 
     //list artworks with filter
-    @GetMapping("list")
+    @GetMapping
     public Result<List<ArtworkListVO>> list(ArtworkQueryDTO query){
         List<ArtworkListVO> list = artworksService.list(query);
         return Result.success(list);
     }
 
     //get artwork detail
-    @GetMapping("detail")
-    public Result<ArtworkDetailVO> detail(Long id){
+    @GetMapping("/{id}")
+    public Result<ArtworkDetailVO> detail(@PathVariable Long id){
         ArtworkDetailVO artworkDetail = artworksService.findDetailById(id);
         if (artworkDetail == null) {
             return Result.error("artwork not found");
@@ -41,11 +41,18 @@ public class ArtworksController {
         return Result.success(artworkDetail);
     }
     //get recommendations
-    @GetMapping("/recommendations")
-    public Result<List<ArtworkRecommendationVO>> findRecommendations(Long id, Integer limit){
+    @GetMapping("/{id}/recommendations")
+    public Result<List<ArtworkRecommendationVO>> findRecommendations(@PathVariable Long id, Integer limit){
         //把当前页面的作品的id传进来,然后再根据对应的score找相似作品
         List<ArtworkRecommendationVO> list = artworksService.findRecommendations(id, limit);
         return Result.success(list);
+    }
+
+    @GetMapping("/search")
+    public Result<List<ArtworkListVO>> search(String q) {
+        ArtworkQueryDTO query = new ArtworkQueryDTO();
+        query.setQ(q);
+        return Result.success(artworksService.list(query));
     }
 
 

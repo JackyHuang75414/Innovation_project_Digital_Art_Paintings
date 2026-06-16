@@ -94,11 +94,17 @@ function openSell(art, maxQty) {
   sellModal.value = { art, maxQty }
   sellQty.value   = maxQty.toFixed(2)
 }
-function executeSell() {
+async function executeSell() {
   const qty = parseFloat(sellQty.value)
   if (!qty || qty <= 0) return
-  const r = store.sellShares(sellModal.value.art.id, qty)
-  sellMsg.value = r.ok ? `Sold ${qty.toFixed(2)} shares @ $${r.price.toFixed(4)}` : r.msg
+  let r
+  try {
+    r = await store.sellShares(sellModal.value.art.id, qty)
+    sellMsg.value = r.ok ? `Sold ${qty.toFixed(2)} shares @ $${r.price.toFixed(4)}` : r.msg
+  } catch (err) {
+    r = { ok: false }
+    sellMsg.value = err.message || 'Sell failed'
+  }
   setTimeout(() => {
     sellMsg.value   = null
     if (r.ok) sellModal.value = null
@@ -107,9 +113,13 @@ function executeSell() {
 
 // ── Quick close perp ──────────────────────────────────────────────────────────
 const closeMsg = ref(null)
-function closePos(posId) {
-  const r = store.closePerp(posId)
-  closeMsg.value = r.ok ? `Closed. PnL: $${(r.pnlUsd ?? 0).toFixed(2)}` : r.msg
+async function closePos(posId) {
+  try {
+    const r = await store.closePerp(posId)
+    closeMsg.value = r.ok ? `Closed. PnL: $${(r.pnlUsd ?? 0).toFixed(2)}` : r.msg
+  } catch (err) {
+    closeMsg.value = err.message || 'Close failed'
+  }
   setTimeout(() => { closeMsg.value = null }, 3000)
 }
 
@@ -129,9 +139,9 @@ function openTpSl(item, type = 'spot') {
   slInput.value   = existing?.slPrice?.toFixed(4) ?? ''
   tpslQty.value   = existing?.qty ?? ''
 }
-function saveTpSl() {
+async function saveTpSl() {
   const m = tpslModal.value
-  store.setTpSl({
+  await store.setTpSl({
     artworkId: m.artworkId,
     type:      m.type,
     posId:     m.posId,
@@ -139,6 +149,17 @@ function saveTpSl() {
     slPrice:   slInput.value   ? parseFloat(slInput.value)  : null,
     qty:       tpslQty.value   ? parseFloat(tpslQty.value)  : null,
   })
+  tpslModal.value = null
+}
+
+async function cancelTpSlOrder(orderId) {
+  if (!orderId) return
+  await store.cancelTpSl(orderId)
+}
+
+async function clearCurrentTpSl() {
+  const orderId = store.wallet.tpslOrders.find(o => o.artworkId === tpslModal.value.artworkId)?.id
+  await cancelTpSlOrder(orderId)
   tpslModal.value = null
 }
 
@@ -365,7 +386,7 @@ function timeAgo(ts) {
               <span v-if="o.slPrice" class="text-red-400">SL ${{ fmt(o.slPrice) }}</span>
               <span v-if="o.qty"     class="text-gray-500">{{ o.qty.toFixed(2) }} shares</span>
             </div>
-            <button class="text-[10px] uppercase text-gray-600 hover:text-red-400 transition-colors" @click="store.cancelTpSl(o.id)">Cancel</button>
+            <button class="text-[10px] uppercase text-gray-600 hover:text-red-400 transition-colors" @click="cancelTpSlOrder(o.id)">Cancel</button>
           </div>
         </div>
       </div>
@@ -764,7 +785,7 @@ function timeAgo(ts) {
         <button
           v-if="tpslModal.type === 'spot' && store.wallet.tpslOrders.find(o => o.artworkId === tpslModal.artworkId && o.type === 'spot')"
           class="w-full mt-2 py-1.5 text-[10px] uppercase text-gray-600 hover:text-red-400 transition-colors"
-          @click="store.cancelTpSl(store.wallet.tpslOrders.find(o => o.artworkId === tpslModal.artworkId)?.id); tpslModal = null"
+          @click="clearCurrentTpSl"
         >Remove Order</button>
       </div>
     </div>

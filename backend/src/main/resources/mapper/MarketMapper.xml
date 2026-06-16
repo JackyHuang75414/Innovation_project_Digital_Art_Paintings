@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ren.yinghui.backend.mapper.MarketMapper">
+
+    <select id="findMarketArtworks" resultType="com.ren.yinghui.backend.vo.MarketArtworkVO">
+        SELECT
+            a.id,
+            m.initial_share_price AS init_price,
+            m.current_share_price AS price,
+            m.total_shares,
+            m.market_cap AS mcap_usd,
+            m.volume_24h,
+            m.change_24h_pct AS change_24h,
+            a.title,
+            ar.name AS artist,
+            ar.bio AS artist_bio,
+            a.image_url,
+            a.image_large_url AS image_large,
+            a.description,
+            a.year,
+            a.medium,
+            a.edition
+        FROM artwork_markets m
+        JOIN artworks a ON m.artwork_id = a.id
+        JOIN artists ar ON a.artist_id = ar.id
+        WHERE a.is_active = 1
+          AND m.is_tradable = 1
+        ORDER BY a.id ASC
+    </select>
+
+    <select id="findMarketArtworkById" resultType="com.ren.yinghui.backend.vo.MarketArtworkVO">
+        SELECT
+            a.id,
+            m.initial_share_price AS init_price,
+            m.current_share_price AS price,
+            m.total_shares,
+            m.market_cap AS mcap_usd,
+            m.volume_24h,
+            m.change_24h_pct AS change_24h,
+            a.title,
+            ar.name AS artist,
+            ar.bio AS artist_bio,
+            a.image_url,
+            a.image_large_url AS image_large,
+            a.description,
+            a.year,
+            a.medium,
+            a.edition
+        FROM artwork_markets m
+        JOIN artworks a ON m.artwork_id = a.id
+        JOIN artists ar ON a.artist_id = ar.id
+        WHERE a.id = #{id}
+          AND a.is_active = 1
+          AND m.is_tradable = 1
+    </select>
+
+    <select id="findTagsByArtworkId" resultType="java.lang.String">
+        SELECT t.name
+        FROM artwork_tags at
+        JOIN tags t ON at.tag_id = t.id
+        WHERE at.artwork_id = #{artworkId}
+        ORDER BY t.name ASC
+    </select>
+
+    <select id="findOrderBookSide" resultType="com.ren.yinghui.backend.vo.OrderBookLevelVO">
+        SELECT
+            price,
+            remaining_size AS size,
+            CASE WHEN is_vmm = 1 THEN 'VMM' ELSE CONCAT('User_', COALESCE(user_id, 0)) END AS user,
+            is_vmm
+        FROM order_book_orders
+        WHERE artwork_id = #{artworkId}
+          AND side = #{side}
+          AND status IN ('open', 'partially_filled')
+        ORDER BY
+          <choose>
+            <when test="side == 'bid'">price DESC</when>
+            <otherwise>price ASC</otherwise>
+          </choose>
+        LIMIT 12
+    </select>
+
+    <select id="findTrades" resultType="com.ren.yinghui.backend.vo.TradeExecutionVO">
+        SELECT
+            id,
+            artwork_id,
+            price,
+            size,
+            side,
+            CASE
+              WHEN buyer_user_id IS NOT NULL THEN CONCAT('User_', buyer_user_id)
+              WHEN seller_user_id IS NOT NULL THEN CONCAT('User_', seller_user_id)
+              ELSE 'VMM'
+            END AS user,
+            executed_at AS time
+        FROM trade_executions
+        WHERE artwork_id = #{artworkId}
+        ORDER BY executed_at DESC, id DESC
+        LIMIT 60
+    </select>
+
+    <select id="findPriceHistory" resultType="com.ren.yinghui.backend.vo.PricePointVO">
+        SELECT recorded_at AS t, price AS p
+        FROM artwork_price_history
+        WHERE artwork_id = #{artworkId}
+        ORDER BY recorded_at ASC
+        LIMIT 200
+    </select>
+
+    <select id="findWallet" resultType="com.ren.yinghui.backend.vo.WalletVO">
+        SELECT usd_balance AS usd, btc_balance AS btc
+        FROM user_wallets
+        WHERE user_id = #{userId}
+    </select>
+
+    <select id="findShareRows" resultType="com.ren.yinghui.backend.mapper.MarketMapper$PortfolioShareRow">
+        SELECT artwork_id, quantity
+        FROM portfolio_share_holdings
+        WHERE user_id = #{userId}
+          AND quantity > 0
+    </select>
+
+    <select id="findOpenPerpPositions" resultType="com.ren.yinghui.backend.vo.PerpPositionVO">
+        SELECT
+            id,
+            artwork_id,
+            side,
+            notional,
+            leverage,
+            entry_price,
+            margin_btc,
+            opened_at AS open_time
+        FROM perp_positions
+        WHERE user_id = #{userId}
+          AND status = 'open'
+        ORDER BY opened_at DESC, id DESC
+    </select>
+
+    <select id="findActiveTpSlOrders" resultType="com.ren.yinghui.backend.vo.TpSlOrderVO">
+        SELECT
+            id,
+            artwork_id,
+            type,
+            perp_position_id AS pos_id,
+            tp_price,
+            sl_price,
+            quantity AS qty,
+            status,
+            created_at
+        FROM tpsl_orders
+        WHERE user_id = #{userId}
+          AND status = 'active'
+        ORDER BY created_at DESC, id DESC
+    </select>
+
+    <select id="findCurrentPrice" resultType="java.math.BigDecimal">
+        SELECT current_share_price
+        FROM artwork_markets
+        WHERE artwork_id = #{artworkId}
+          AND is_tradable = 1
+    </select>
+
+    <select id="findHoldingQuantity" resultType="java.math.BigDecimal">
+        SELECT COALESCE(quantity, 0)
+        FROM portfolio_share_holdings
+        WHERE user_id = #{userId}
+          AND artwork_id = #{artworkId}
+    </select>
+
+    <update id="updateUsdBalance">
+        UPDATE user_wallets
+        SET usd_balance = usd_balance + #{delta}
+        WHERE user_id = #{userId}
+          AND usd_balance + #{delta} >= 0
+    </update>
+
+    <update id="updateBtcBalance">
+        UPDATE user_wallets
+        SET btc_balance = btc_balance + #{delta}
+        WHERE user_id = #{userId}
+          AND btc_balance + #{delta} >= 0
+    </update>
+
+    <insert id="upsertHolding">
+        INSERT INTO portfolio_share_holdings (user_id, artwork_id, quantity, avg_cost)
+        VALUES (#{userId}, #{artworkId}, #{quantityDelta}, #{price})
+        ON DUPLICATE KEY UPDATE
+            avg_cost = CASE
+                WHEN quantity + #{quantityDelta} > 0 AND #{quantityDelta} > 0
+                THEN ((avg_cost * quantity) + (#{price} * #{quantityDelta})) / (quantity + #{quantityDelta})
+                ELSE avg_cost
+            END,
+            quantity = GREATEST(0, quantity + #{quantityDelta})
+    </insert>
+
+    <insert id="insertTrade">
+        INSERT INTO trade_executions (
+            artwork_id, buyer_user_id, seller_user_id, side, price, size, notional, source
+        ) VALUES (
+            #{artworkId}, #{buyerUserId}, #{sellerUserId}, #{side}, #{price}, #{size}, #{notional}, #{source}
+        )
+    </insert>
+
+    <insert id="insertPerpPosition" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO perp_positions (
+            user_id, artwork_id, side, notional, leverage, entry_price, margin_btc
+        ) VALUES (
+            #{userId}, #{artworkId}, #{side}, #{notional}, #{leverage}, #{entryPrice}, #{marginBtc}
+        )
+    </insert>
+
+    <select id="findOpenPerpPositionById" resultType="com.ren.yinghui.backend.vo.PerpPositionVO">
+        SELECT
+            id,
+            artwork_id,
+            side,
+            notional,
+            leverage,
+            entry_price,
+            margin_btc,
+            opened_at AS open_time
+        FROM perp_positions
+        WHERE user_id = #{userId}
+          AND id = #{posId}
+          AND status = 'open'
+    </select>
+
+    <update id="closePerpPosition">
+        UPDATE perp_positions
+        SET status = 'closed',
+            closed_at = NOW()
+        WHERE user_id = #{userId}
+          AND id = #{posId}
+          AND status = 'open'
+    </update>
+
+    <insert id="insertTpSl">
+        INSERT INTO tpsl_orders (
+            user_id, artwork_id, type, perp_position_id, tp_price, sl_price, quantity
+        ) VALUES (
+            #{userId}, #{artworkId}, #{type}, #{posId}, #{tpPrice}, #{slPrice}, #{qty}
+        )
+    </insert>
+
+    <update id="cancelTpSl">
+        UPDATE tpsl_orders
+        SET status = 'cancelled'
+        WHERE user_id = #{userId}
+          AND id = #{id}
+          AND status = 'active'
+    </update>
+</mapper>

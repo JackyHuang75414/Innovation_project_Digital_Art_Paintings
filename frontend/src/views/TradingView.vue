@@ -60,31 +60,43 @@ function requireWallet() {
   return true
 }
 
-function executeSpot() {
+async function executeSpot() {
   if (!requireWallet()) return
   const amt = parseFloat(spotAmount.value)
   if (!amt || amt <= 0) return
-  let result = tradeSide.value === 'buy'
-    ? store.buyShares(artworkId.value, amt)
-    : store.sellShares(artworkId.value, amt)
-  tradeMsg.value = { ok: result.ok, text: result.ok ? `Filled @ $${(result.price ?? price.value).toFixed(4)}` : result.msg }
-  if (result.ok) spotAmount.value = ''
+  try {
+    let result = tradeSide.value === 'buy'
+      ? await store.buyShares(artworkId.value, amt)
+      : await store.sellShares(artworkId.value, amt)
+    tradeMsg.value = { ok: result.ok, text: result.ok ? `Filled @ $${(result.price ?? price.value).toFixed(4)}` : result.msg }
+    if (result.ok) spotAmount.value = ''
+  } catch (err) {
+    tradeMsg.value = { ok: false, text: err.message || 'Trade failed' }
+  }
   setTimeout(() => { tradeMsg.value = null }, 3000)
 }
 
-function executePerp() {
+async function executePerp() {
   if (!requireWallet()) return
   const btc = parseFloat(marginBtc.value)
   if (!btc || btc <= 0) return
-  const result = store.openPerp(artworkId.value, perpSide.value, leverage.value, btc)
-  tradeMsg.value = { ok: result.ok, text: result.ok ? `${perpSide.value.toUpperCase()} opened @ $${price.value.toFixed(4)}` : result.msg }
-  if (result.ok) marginBtc.value = ''
+  try {
+    const result = await store.openPerp(artworkId.value, perpSide.value, leverage.value, btc)
+    tradeMsg.value = { ok: result.ok, text: result.ok ? `${perpSide.value.toUpperCase()} opened @ $${price.value.toFixed(4)}` : result.msg }
+    if (result.ok) marginBtc.value = ''
+  } catch (err) {
+    tradeMsg.value = { ok: false, text: err.message || 'Position open failed' }
+  }
   setTimeout(() => { tradeMsg.value = null }, 3000)
 }
 
-function closePosition(posId) {
-  const result = store.closePerp(posId)
-  tradeMsg.value = { ok: result.ok, text: result.ok ? `Closed. PnL: $${(result.pnlUsd ?? 0).toFixed(2)}` : result.msg }
+async function closePosition(posId) {
+  try {
+    const result = await store.closePerp(posId)
+    tradeMsg.value = { ok: result.ok, text: result.ok ? `Closed. PnL: $${(result.pnlUsd ?? 0).toFixed(2)}` : result.msg }
+  } catch (err) {
+    tradeMsg.value = { ok: false, text: err.message || 'Close failed' }
+  }
   setTimeout(() => { tradeMsg.value = null }, 4000)
 }
 

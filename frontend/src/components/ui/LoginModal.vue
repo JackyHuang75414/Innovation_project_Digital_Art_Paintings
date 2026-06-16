@@ -17,12 +17,10 @@ async function submit() {
   loading.value = true
   error.value = ''
   await new Promise(r => setTimeout(r, 400))  // simulate network
-  const result = auth.login(username.value.trim(), password.value)
+  const result = await auth.login(username.value.trim(), password.value)
   loading.value = false
   if (!result.ok) { error.value = result.msg; return }
-  // Seed trading wallet with account's starting balance
-  store.wallet.usd = result.account.startUsd
-  store.wallet.btc = result.account.startBtc
+  await store.loadWallet()
   emit('close')
 }
 

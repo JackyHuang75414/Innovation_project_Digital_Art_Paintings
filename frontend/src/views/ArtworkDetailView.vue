@@ -1,41 +1,50 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
+import { getArtwork, getRecommendations } from '@/api/artworks'
 
 const cart = useCartStore()
+const route = useRoute()
 
-// Placeholder — replace with API fetch using useRoute().params.id
-const artwork = ref({
-  id: 1,
-  imageUrl: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=900',
-  title: 'Abstract Harmony',
-  artistName: 'Sophie Laurent',
-  artistCountry: 'France',
-  price: 89,
-  medium: 'Acrylic on Canvas',
-  dimensions: '60 × 80 cm',
-  year: 2024,
-  description: 'A vivid exploration of colour and emotion. This piece captures the tension between stillness and movement through layered brushwork and a bold chromatic palette.',
-  tags: ['abstract', 'colourful', 'expressive'],
-})
-
-const sizes = ['A4 Print', 'A3 Print', 'A2 Print', '50×70 cm', '60×80 cm']
-const selectedSize = ref('A3 Print')
+const artwork = ref(null)
+const recommendations = ref([])
+const selectedSize = ref('')
 const added = ref(false)
+const loading = ref(false)
+const error = ref('')
+
+const sizes = computed(() => artwork.value?.availableSizes?.length ? artwork.value.availableSizes : ['A4 Print'])
+
+watch(
+  () => route.params.id,
+  async id => {
+    loading.value = true
+    error.value = ''
+    try {
+      const [artRes, recRes] = await Promise.all([
+        getArtwork(id),
+        getRecommendations(id),
+      ])
+      artwork.value = artRes.data
+      recommendations.value = recRes.data ?? []
+      selectedSize.value = sizes.value[0]
+    } catch (err) {
+      error.value = err.message || 'Artwork not found'
+    } finally {
+      loading.value = false
+    }
+  },
+  { immediate: true }
+)
 
 function addToCart() {
+  if (!artwork.value) return
   cart.add(artwork.value, selectedSize.value)
   added.value = true
   setTimeout(() => { added.value = false }, 2000)
 }
-
-const recommendations = ref([
-  { id: 2, imageUrl: 'https://images.unsplash.com/photo-1547826039-bfc35e0f1ea8?w=400', title: 'Urban Geometry',  artistName: 'Marco Chen',     price: 120 },
-  { id: 3, imageUrl: 'https://images.unsplash.com/photo-1620503374956-c942862f0372?w=400', title: 'Blue Silence',   artistName: 'Amara Diallo',   price: 75 },
-  { id: 4, imageUrl: 'https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?w=400', title: 'Golden Hour',    artistName: 'Lena Kuznetsov', price: 99 },
-  { id: 5, imageUrl: 'https://images.unsplash.com/photo-1605721911519-3dfeb3be25e7?w=400', title: 'Forest Dream',   artistName: 'Jules Moreau',   price: 65 },
-])
 </script>
 
 <template>
@@ -52,7 +61,13 @@ const recommendations = ref([
     </div>
   </div>
 
-  <div class="max-w-screen-xl mx-auto px-6 lg:px-16 py-12 lg:py-16">
+  <div v-if="loading" class="max-w-screen-xl mx-auto px-6 lg:px-16 py-24 text-sm text-gray-500">
+    Loading artwork...
+  </div>
+  <div v-else-if="error || !artwork" class="max-w-screen-xl mx-auto px-6 lg:px-16 py-24 text-sm text-gray-500">
+    {{ error || 'Artwork not found' }}
+  </div>
+  <div v-else class="max-w-screen-xl mx-auto px-6 lg:px-16 py-12 lg:py-16">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
 
       <!-- Image -->

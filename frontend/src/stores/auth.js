@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { loginUser, logoutUser } from '@/api/user'
 
 export const DEMO_ACCOUNTS = [
   {
@@ -52,22 +53,25 @@ export const useAuthStore = defineStore('auth', () => {
   const initials    = computed(() => user.value?.initials ?? '')
   const color       = computed(() => user.value?.color ?? '#E8552A')
 
-  function login(username, password) {
-    const account = DEMO_ACCOUNTS.find(
-      a => a.username === username && a.password === password
-    )
-    if (!account) return { ok: false, msg: 'Invalid username or password' }
+  async function login(username, password) {
+    let result
+    try {
+      result = await loginUser(username, password)
+    } catch (e) {
+      return { ok: false, msg: e.message || 'Invalid username or password' }
+    }
 
+    const demoMeta = DEMO_ACCOUNTS.find(a => a.username === username) ?? {}
     const profile = {
-      id: account.id,
-      username: account.username,
-      displayName: account.displayName,
-      initials: account.initials,
-      color: account.color,
-      bio: account.bio,
-      startUsd: account.startUsd,
-      startBtc: account.startBtc,
-      isPaid: account.isPaid,
+      id: result.user.id,
+      username: result.user.name,
+      displayName: demoMeta.displayName ?? result.user.name,
+      initials: demoMeta.initials ?? result.user.name.slice(0, 2).toUpperCase(),
+      color: demoMeta.color ?? '#E8552A',
+      bio: demoMeta.bio ?? '',
+      startUsd: demoMeta.startUsd ?? 0,
+      startBtc: demoMeta.startBtc ?? 0,
+      isPaid: demoMeta.isPaid ?? false,
     }
     user.value = profile
     localStorage.setItem(STORAGE_KEY, JSON.stringify(profile))
@@ -81,6 +85,7 @@ export const useAuthStore = defineStore('auth', () => {
   function logout() {
     user.value = null
     localStorage.removeItem(STORAGE_KEY)
+    logoutUser()
   }
 
   return { user, isLoggedIn, isPaid, displayName, initials, color, login, loginAsGuest, logout, DEMO_ACCOUNTS }

@@ -6,13 +6,17 @@ import AppFooter from '@/components/layout/AppFooter.vue'
 import AiRecommendChat from '@/components/ui/AiRecommendChat.vue'
 import { usePricesStore } from '@/stores/prices'
 import { useUserProfileStore } from '@/stores/userProfile'
-import { ARTWORKS } from '@/stores/trading'
+import { useTradingStore } from '@/stores/trading'
 
 const route   = useRoute()
 const prices  = usePricesStore()
 const profile = useUserProfileStore()
+const trading = useTradingStore()
 
-onMounted(prices.startPolling)
+onMounted(() => {
+  prices.startPolling()
+  trading.init()
+})
 onUnmounted(prices.stopPolling)
 
 // ── Track browsing for AI user profile ────────────────────────────────────
@@ -22,7 +26,7 @@ watch(
     // Extract artwork ID from /trade/:id or /artwork/:id
     const id = Number(route.params.id)
     if (!id) return
-    const artwork = ARTWORKS.find(a => a.id === id)
+    const artwork = trading.ARTWORKS.find(a => a.id === id)
     if (artwork) {
       profile.recordView(artwork)
     }

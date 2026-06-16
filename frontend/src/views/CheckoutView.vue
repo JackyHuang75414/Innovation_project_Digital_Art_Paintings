@@ -4,6 +4,7 @@ import { RouterLink, useRouter } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
 import QRCode from 'qrcode'
 import { generateBtcAddress, getBtcReceived, EUR_TO_BTC, luhn } from '@/api/payments'
+import { createOrder } from '@/api/orders'
 
 const cart = useCartStore()
 const router = useRouter()
@@ -21,8 +22,25 @@ const formError = ref('')
 const paymentSuccess = ref(false)
 const orderNumber = ref('')
 
-function handleSuccess() {
-  orderNumber.value = 'AC-' + Math.random().toString(36).slice(2, 8).toUpperCase()
+async function handleSuccess() {
+  const payload = {
+    customerName: name.value.trim(),
+    customerEmail: email.value.trim(),
+    customerPhone: '',
+    shippingCountry: 'France',
+    shippingCity: 'Paris',
+    shippingAddressLine1: 'Digital checkout',
+    shippingAddressLine2: '',
+    shippingPostalCode: '75001',
+    paymentMethod: method.value,
+    items: cart.items.map(item => ({
+      artworkId: item.artwork.id,
+      size: item.size,
+      quantity: item.quantity,
+    })),
+  }
+  const { data } = await createOrder(payload)
+  orderNumber.value = data.orderNo
   paymentSuccess.value = true
   cart.clear()
 }
@@ -91,8 +109,10 @@ async function submitStripe() {
     } else {
       // Production: POST paymentMethod.id to backend → /api/payments/charge
       console.log('[Stripe] paymentMethod.id:', paymentMethod.id)
-      handleSuccess()
+      await handleSuccess()
     }
+  } catch (err) {
+    formError.value = err.message || 'Could not create order.'
   } finally {
     processing.value = false
   }
@@ -131,9 +151,14 @@ async function submitDemo() {
   }
   if (demoCVV.value.length < 3) { demoError.value = 'Invalid CVV.'; return }
   processing.value = true
-  await new Promise(r => setTimeout(r, 1500))
-  processing.value = false
-  handleSuccess()
+  try {
+    await new Promise(r => setTimeout(r, 1500))
+    await handleSuccess()
+  } catch (err) {
+    formError.value = err.message || 'Could not create order.'
+  } finally {
+    processing.value = false
+  }
 }
 
 // ── Bitcoin ───────────────────────────────────────────────────────────────────
@@ -175,7 +200,11 @@ function startBtcPolling() {
     if (received > 0) {
       btcPaid.value = true
       stopBtcPolling()
-      handleSuccess()
+      try {
+        await handleSuccess()
+      } catch (err) {
+        formError.value = err.message || 'Could not create order.'
+      }
     }
   }, 12000)
 }
@@ -190,10 +219,14 @@ async function copyAddress() {
   setTimeout(() => { copied.value = false }, 2000)
 }
 
-function simulateBtcPayment() {
+async function simulateBtcPayment() {
   stopBtcPolling()
   btcPaid.value = true
-  handleSuccess()
+  try {
+    await handleSuccess()
+  } catch (err) {
+    formError.value = err.message || 'Could not create order.'
+  }
 }
 
 // ── Tab switching ─────────────────────────────────────────────────────────────
