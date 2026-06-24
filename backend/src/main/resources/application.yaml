@@ -1,0 +1,17 @@
+server:
+  port: 9090
+
+spring:
+  application:
+    name: backend
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/digital_art_paintings?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
+
+mybatis:
+    mapper-locations: classpath:mapper/*.xml
+    type-aliases-package: com.ren.yinghui.backend.entity
+    configuration:
+      map-underscore-to-camel-case: true

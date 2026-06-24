@@ -1,26 +1,29 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore, DEMO_ACCOUNTS } from '@/stores/auth'
 import { useTradingStore } from '@/stores/trading'
 
-const emit = defineEmits(['close'])
+const emit   = defineEmits(['close'])
 const auth   = useAuthStore()
 const store  = useTradingStore()
+const router = useRouter()
 
 const username = ref('')
 const password = ref('')
 const error    = ref('')
 const loading  = ref(false)
 
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
+
 async function submit() {
   if (!username.value || !password.value) { error.value = 'Please enter both fields'; return }
   loading.value = true
   error.value = ''
-  await new Promise(r => setTimeout(r, 400))  // simulate network
+  await new Promise(r => setTimeout(r, 400))
   const result = auth.login(username.value.trim(), password.value)
   loading.value = false
   if (!result.ok) { error.value = result.msg; return }
-  // Seed trading wallet with account's starting balance
   store.wallet.usd = result.account.startUsd
   store.wallet.btc = result.account.startBtc
   emit('close')
@@ -30,6 +33,41 @@ function quickLogin(account) {
   username.value = account.username
   password.value = account.password
   submit()
+}
+
+function goToRegister() {
+  emit('close')
+  router.push('/register')
+}
+
+function goToForgot() {
+  emit('close')
+  router.push('/forgot-password')
+}
+
+// Google Sign-In
+onMounted(() => {
+  if (!GOOGLE_CLIENT_ID || !window.google) return
+  window.google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: handleGoogleCredential,
+  })
+  window.google.accounts.id.renderButton(
+    document.getElementById('google-signin-btn'),
+    { theme: 'outline', size: 'large', width: 368, text: 'continue_with', shape: 'rectangular' }
+  )
+})
+
+async function handleGoogleCredential({ credential }) {
+  loading.value = true
+  error.value = ''
+  const result = await auth.googleLogin(credential)
+  loading.value = false
+  if (!result.ok) {
+    error.value = result.msg || 'Google sign-in failed'
+    return
+  }
+  emit('close')
 }
 </script>
 
@@ -45,7 +83,17 @@ function quickLogin(account) {
 
       <div class="px-6 py-5 space-y-5">
 
-        <!-- Quick login accounts -->
+        <!-- Google Sign-In -->
+        <div v-if="GOOGLE_CLIENT_ID">
+          <div id="google-signin-btn" class="flex justify-center" />
+          <div class="flex items-center gap-3 mt-4">
+            <div class="flex-1 h-px bg-white/[0.07]" />
+            <span class="text-[10px] text-gray-700 uppercase tracking-wide">or continue with demo</span>
+            <div class="flex-1 h-px bg-white/[0.07]" />
+          </div>
+        </div>
+
+        <!-- Quick login demo accounts -->
         <div>
           <p class="text-[10px] tracking-[0.2em] uppercase text-gray-600 mb-2.5">Demo Accounts</p>
           <div class="space-y-1.5">
@@ -76,7 +124,7 @@ function quickLogin(account) {
 
         <div class="flex items-center gap-3">
           <div class="flex-1 h-px bg-white/[0.07]" />
-          <span class="text-[10px] text-gray-700 uppercase tracking-wide">or enter manually</span>
+          <span class="text-[10px] text-gray-700 uppercase tracking-wide">or sign in manually</span>
           <div class="flex-1 h-px bg-white/[0.07]" />
         </div>
 
@@ -86,14 +134,22 @@ function quickLogin(account) {
             v-model="username"
             type="text"
             placeholder="Username"
+            autocomplete="username"
             class="w-full bg-[#0d0d10] border border-white/[0.1] text-gray-200 px-3 py-2.5 text-sm outline-none focus:border-white/25 placeholder:text-gray-700"
           />
           <input
             v-model="password"
             type="password"
             placeholder="Password"
+            autocomplete="current-password"
             class="w-full bg-[#0d0d10] border border-white/[0.1] text-gray-200 px-3 py-2.5 text-sm outline-none focus:border-white/25 placeholder:text-gray-700"
           />
+
+          <div class="flex justify-end">
+            <button type="button" class="text-[10px] text-gray-600 hover:text-gray-400 transition-colors" @click="goToForgot">
+              Forgot password?
+            </button>
+          </div>
 
           <p v-if="error" class="text-[11px] text-red-400">{{ error }}</p>
 
@@ -106,9 +162,14 @@ function quickLogin(account) {
           </button>
         </form>
 
-        <p class="text-[10px] text-gray-700 text-center font-light">
-          This is a demo platform. No real funds or transactions.
+        <!-- Register link -->
+        <p class="text-center text-[11px] text-gray-600">
+          New to ArtEx?
+          <button class="text-[#E8552A] hover:text-[#d4461c] ml-1 transition-colors" @click="goToRegister">
+            Create an account →
+          </button>
         </p>
+
       </div>
     </div>
   </div>

@@ -16,8 +16,12 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       proxy: {
-        // Backend API
-        '/api': 'http://localhost:8000',
+        // Backend API (Spring Boot on 8080)
+        '/api': {
+          target: 'http://localhost:9090',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api/, ''),
+        },
 
         // CoinGecko — live crypto prices (free, no key, bypasses CORS)
         '/coingecko': {

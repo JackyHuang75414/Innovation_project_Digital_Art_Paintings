@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ren.yinghui.backend.mapper.ArtworksMapper"><!--对应接口的全类名-->
+
+	<select id="list" resultType="com.ren.yinghui.backend.vo.ArtworkListVO">
+	    SELECT
+            a.id,
+            a.image_url,
+            a.title,
+            ar.name AS artist_name,
+            a.price,
+            a.medium,
+            a.badge
+        FROM artworks a
+    JOIN artists ar ON a.artist_id = ar.id
+    LEFT JOIN categories c ON a.category_id = c.id
+    <where>
+        a.is_active = 1
+        <if test="q != null and q != ''">
+            AND (a.title LIKE CONCAT('%', #{q}, '%')
+                OR a.medium LIKE CONCAT('%', #{q}, '%'))
+        </if>
+        <if test="category != null and category != ''">
+            AND (c.name = #{category} OR c.slug = #{category})
+        </if>
+        <if test="medium != null and medium != ''">
+            AND a.medium = #{medium}
+        </if>
+        <if test="orientation != null and orientation != ''">
+            AND a.orientation = #{orientation}
+        </if>
+        <if test="color != null and color != ''">
+            AND a.dominant_color = #{color}
+        </if>
+        <if test="priceMin != null">
+            AND a.price &gt;= #{priceMin}
+        </if>
+        <if test="priceMax != null">
+            AND a.price &lt;= #{priceMax}
+        </if>
+    </where>
+    <choose>
+        <when test="sort == 'price_asc'">ORDER BY a.price ASC, a.id ASC</when>
+        <when test="sort == 'price_desc'">ORDER BY a.price DESC, a.id ASC</when>
+        <when test="sort == 'newest'">ORDER BY a.created_at DESC, a.id ASC</when>
+        <when test="sort == 'trending'">ORDER BY a.sold_count DESC, a.view_count DESC, a.id ASC</when>
+        <otherwise>ORDER BY a.id ASC</otherwise>
+    </choose>
+	    LIMIT #{limit} OFFSET #{offset}
+	</select>
+
+    <select id="findDetailById" resultType="com.ren.yinghui.backend.vo.ArtworkDetailVO">
+        SELECT
+            a.id,
+            a.image_url,
+            a.title,
+            ar.name AS artist_name,
+            ar.country AS artist_country,
+            a.price,
+            a.medium,
+            a.dimensions,
+            a.year,
+            a.description
+        FROM artworks a
+        JOIN artists ar ON a.artist_id = ar.id
+        WHERE a.id = #{id}
+          AND a.is_active = 1
+    </select>
+
+    <select id="findTagsByArtworkId" resultType="java.lang.String">
+        SELECT t.name
+        FROM artwork_tags at
+        JOIN tags t ON at.tag_id = t.id
+        WHERE at.artwork_id = #{id}
+        ORDER BY t.name ASC
+    </select>
+
+    <select id="findAvailableSizesByArtworkId" resultType="java.lang.String">
+        SELECT s.name
+        FROM artwork_sizes arts
+        JOIN sizes s ON arts.size_id = s.id
+        WHERE arts.artwork_id = #{id}
+          AND arts.is_available = 1
+        ORDER BY s.sort_order ASC, s.id ASC
+    </select>
+
+    <select id="findRecommendations" resultType="com.ren.yinghui.backend.vo.ArtworkRecommendationVO">
+        SELECT
+            a.id,
+            a.image_url,
+            a.title,
+            ar.name AS artist_name,
+            a.price
+        FROM artwork_recommendations r
+        JOIN artworks a ON r.recommended_artwork_id = a.id
+        JOIN artists ar ON a.artist_id = ar.id
+        WHERE r.artwork_id = #{id}
+          AND a.is_active = 1
+        ORDER BY r.score DESC, a.id ASC
+        LIMIT #{limit}
+    </select>
+</mapper>

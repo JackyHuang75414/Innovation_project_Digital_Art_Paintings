@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { loginBackend, register as registerApi, getMe, googleLogin as googleLoginApi, deleteAccount as deleteAccountApi } from '@/api/auth'
 
 export const DEMO_ACCOUNTS = [
   {
@@ -81,7 +82,90 @@ export const useAuthStore = defineStore('auth', () => {
   function logout() {
     user.value = null
     localStorage.removeItem(STORAGE_KEY)
+    localStorage.removeItem('artex_jwt')
   }
 
-  return { user, isLoggedIn, isPaid, displayName, initials, color, login, loginAsGuest, logout, DEMO_ACCOUNTS }
+  // Real backend login — saves JWT, fetches user profile
+  async function loginReal(name, password) {
+    try {
+      const token = await loginBackend(name, password)
+      if (!token) return { ok: false, msg: 'No token returned' }
+      localStorage.setItem('artex_jwt', token)
+      const profile = await getMe()
+      const enriched = {
+        id: profile.id,
+        username: profile.name,
+        displayName: profile.name,
+        initials: profile.name.slice(0, 2).toUpperCase(),
+        color: '#22c55e',
+        bio: '',
+        isPaid: false,
+        isRealUser: true,
+      }
+      user.value = enriched
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(enriched))
+      return { ok: true, account: enriched }
+    } catch (e) {
+      return { ok: false, msg: e.message }
+    }
+  }
+
+  // Real backend register
+  async function registerReal(name, email, password) {
+    try {
+      await registerApi(name, email, password)
+      return { ok: true }
+    } catch (e) {
+      let msg = e.message || 'Registration failed'
+      if (msg.includes('S{3,16}')) msg = 'Username must be 3–16 characters with no spaces'
+      if (msg.includes('S{5,16}')) msg = 'Password must be 5–16 characters with no spaces'
+      if (msg.includes('well-formed email') || msg.includes('Email')) msg = 'Please enter a valid email address'
+      return { ok: false, msg }
+    }
+  }
+
+  async function googleLogin(credential) {
+    try {
+      const token = await googleLoginApi(credential)
+      if (!token) return { ok: false, msg: 'No token returned' }
+      localStorage.setItem('artex_jwt', token)
+      const profile = await getMe()
+      const enriched = {
+        id: profile.id,
+        username: profile.name,
+        displayName: profile.name,
+        initials: profile.name.slice(0, 2).toUpperCase(),
+        color: '#4285F4',
+        bio: 'Google account',
+        isPaid: false,
+        isRealUser: true,
+        isGoogleUser: true,
+      }
+      user.value = enriched
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(enriched))
+      return { ok: true, account: enriched }
+    } catch (e) {
+      return { ok: false, msg: e.message }
+    }
+  }
+
+  async function deleteAccount() {
+    try {
+      await deleteAccountApi()
+      user.value = null
+      localStorage.removeItem(STORAGE_KEY)
+      localStorage.removeItem('artex_jwt')
+      return { ok: true }
+    } catch (e) {
+      return { ok: false, msg: e.message }
+    }
+  }
+
+  const hasJwt = computed(() => !!localStorage.getItem('artex_jwt'))
+
+  return {
+    user, isLoggedIn, isPaid, displayName, initials, color, hasJwt,
+    login, loginAsGuest, loginReal, registerReal, googleLogin, deleteAccount, logout,
+    DEMO_ACCOUNTS,
+  }
 })
