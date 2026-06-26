@@ -1,12 +1,16 @@
 <script setup>
-import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
+import { useWishlistStore } from '@/stores/wishlist'
 
 const props = defineProps({
   artwork: { type: Object, required: true },
 })
 
-const wishlisted = ref(false)
+const wishlist = useWishlistStore()
+
+async function toggleWishlist() {
+  await wishlist.toggle(props.artwork)
+}
 </script>
 
 <template>
@@ -23,13 +27,13 @@ const wishlisted = ref(false)
         <!-- Wishlist button -->
         <button
           class="absolute top-3 right-3 w-7 h-7 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center shadow-sm transition-all duration-200 opacity-0 group-hover:opacity-100"
-          :class="{ '!opacity-100': wishlisted }"
-          aria-label="Add to wishlist"
-          @click.prevent="wishlisted = !wishlisted"
+          :class="{ '!opacity-100': wishlist.isWishlisted(artwork.id) }"
+          :aria-label="wishlist.isWishlisted(artwork.id) ? 'Remove from wishlist' : 'Add to wishlist'"
+          @click.prevent="toggleWishlist"
         >
           <svg
             class="w-3.5 h-3.5 transition-colors"
-            :class="wishlisted ? 'text-[#E8552A] fill-current' : 'text-gray-500'"
+            :class="wishlist.isWishlisted(artwork.id) ? 'text-[#E8552A] fill-current' : 'text-gray-500'"
             fill="none"
             stroke="currentColor"
             stroke-width="2"

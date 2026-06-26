@@ -3,9 +3,11 @@ import { computed, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useRoute } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
+import { useWishlistStore } from '@/stores/wishlist'
 import { getArtwork, getRecommendations } from '@/api/artworks'
 
 const cart = useCartStore()
+const wishlist = useWishlistStore()
 const route = useRoute()
 
 const artwork = ref(null)
@@ -30,6 +32,7 @@ watch(
       artwork.value = artRes.data
       recommendations.value = recRes.data ?? []
       selectedSize.value = sizes.value[0]
+      await wishlist.loadMine()
     } catch (err) {
       error.value = err.message || 'Artwork not found'
     } finally {
@@ -44,6 +47,11 @@ function addToCart() {
   cart.add(artwork.value, selectedSize.value)
   added.value = true
   setTimeout(() => { added.value = false }, 2000)
+}
+
+async function toggleWishlist() {
+  if (!artwork.value) return
+  await wishlist.toggle(artwork.value)
 }
 </script>
 
@@ -139,9 +147,30 @@ function addToCart() {
         </div>
 
         <!-- Add to cart -->
-        <button class="btn-primary w-full text-center" @click="addToCart">
-          {{ added ? 'Added to Cart' : 'Add to Cart' }}
-        </button>
+        <div class="grid grid-cols-[1fr_auto] gap-3">
+          <button class="btn-primary text-center" @click="addToCart">
+            {{ added ? 'Added to Cart' : 'Add to Cart' }}
+          </button>
+          <button
+            class="w-12 border flex items-center justify-center transition-colors"
+            :class="wishlist.isWishlisted(artwork.id)
+              ? 'border-[#E8552A] bg-[#E8552A]/10 text-[#E8552A]'
+              : 'border-gray-200 text-gray-500 hover:border-gray-400 hover:text-gray-900'"
+            :aria-label="wishlist.isWishlisted(artwork.id) ? 'Remove from wishlist' : 'Add to wishlist'"
+            @click="toggleWishlist"
+          >
+            <svg
+              class="w-4 h-4"
+              :class="wishlist.isWishlisted(artwork.id) ? 'fill-current' : ''"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              viewBox="0 0 24 24"
+            >
+              <path d="M4.318 6.318a4.5 4.5 0 0 1 6.364 0L12 7.636l1.318-1.318a4.5 4.5 0 0 1 6.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 0 1 0-6.364Z" />
+            </svg>
+          </button>
+        </div>
 
         <!-- Trust signals -->
         <div class="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">

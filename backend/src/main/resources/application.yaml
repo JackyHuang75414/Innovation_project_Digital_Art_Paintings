@@ -17,3 +17,9 @@ mybatis:
     type-aliases-package: com.ren.yinghui.backend.entity
     configuration:
       map-underscore-to-camel-case: true
+
+ai:
+  deepseek:
+    chat-url: https://api.deepseek.com/v1/chat/completions
+    model: deepseek-chat
+    api-key: ${LLM_API_KEY:${DEEPSEEK_API_KEY:}}

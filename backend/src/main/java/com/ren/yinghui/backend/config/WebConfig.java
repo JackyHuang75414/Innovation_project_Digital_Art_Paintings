@@ -29,6 +29,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/artworks/*",
                         "/artworks/*/recommendations",
                         "/artworks/search",
+                        "/ai/chat",
                         "/market/artworks",
                         "/market/artworks/*",
                         "/market/artworks/*/order-book",

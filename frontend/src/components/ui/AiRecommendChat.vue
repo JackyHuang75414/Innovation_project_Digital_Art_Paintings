@@ -9,10 +9,11 @@
  *   AI 提供實時價格監測與預警，協助買入 / 賣出操作。
  *   用戶需在聊天框中授權執行交易。聊天框關閉時顯示紅色未讀標識。
  *
- * Backend: DeepSeek Chat API via Vite proxy (/llm-api).
+ * Backend: Spring Boot AI chat proxy (/api/ai/chat).
  */
 import { ref, nextTick, watch, computed, onMounted, onUnmounted } from 'vue'
 import { RouterLink } from 'vue-router'
+import { chatWithAi } from '@/api/ai'
 import { useAuthStore } from '@/stores/auth'
 import { useUserProfileStore } from '@/stores/userProfile'
 import { useNotificationsStore } from '@/stores/notifications'
@@ -271,45 +272,24 @@ async function executeTrade(action) {
   scrollToBottom()
 }
 
-// ── DeepSeek API call ─────────────────────────────────────────────────────
+// ── Spring Boot AI proxy call ─────────────────────────────────────────────
 async function callLLM(userText, isProactive = false) {
   // For proactive calls we use a different path to isolate context
   const history = isProactive ? [] : apiHistory
 
-  const res = await fetch('/llm-api/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'deepseek-chat',
-      stream: false,
-      messages: [
-        { role: 'system', content: systemPrompt.value },
-        ...history,
-        { role: 'user', content: userText },
-      ],
-    }),
+  const res = await chatWithAi({
+    model: 'deepseek-chat',
+    messages: [
+      { role: 'system', content: systemPrompt.value },
+      ...history,
+      { role: 'user', content: userText },
+    ],
   })
 
-  if (!res.ok) {
-    const raw = await res.text()
-    throw new Error(`DeepSeek ${res.status}: ${raw.slice(0, 300)}`)
-  }
-
-  const contentType = res.headers.get('content-type') ?? ''
-  if (!contentType.includes('application/json')) {
-    const raw = await res.text()
-    throw new Error(`Expected JSON but got "${contentType}". Restart Vite dev server. Raw: ${raw.slice(0, 120)}`)
-  }
-
-  const data = await res.json()
-  const text =
-    data.choices?.[0]?.message?.content ??
-    data.choices?.[0]?.delta?.content ??
-    data.output?.text ??
-    null
+  const text = res.data?.reply ?? null
 
   if (text === null || text === undefined) {
-    throw new Error('Cannot parse response: ' + JSON.stringify(data).slice(0, 400))
+    throw new Error('Cannot parse AI response')
   }
 
   if (text.trim() === '') {

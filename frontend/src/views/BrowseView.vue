@@ -3,11 +3,13 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useTradingStore, TOTAL_SHARES } from '@/stores/trading'
 import { usePricesStore } from '@/stores/prices'
+import { useWishlistStore } from '@/stores/wishlist'
 import CryptoPriceBadge from '@/components/ui/CryptoPriceBadge.vue'
 
 const store  = useTradingStore()
 const prices = usePricesStore()
-onMounted(() => { store.init(); prices.startPolling() })
+const wishlist = useWishlistStore()
+onMounted(() => { store.init(); prices.startPolling(); wishlist.loadMine() })
 onUnmounted(() => prices.stopPolling())
 
 const sortBy  = ref('mcap')   // 'mcap' | 'change_asc' | 'change_desc' | 'volume'
@@ -41,6 +43,10 @@ const rows = computed(() => {
 
   return list
 })
+
+async function toggleWishlist(art) {
+  await wishlist.toggle(art)
+}
 </script>
 
 <template>
@@ -88,7 +94,7 @@ const rows = computed(() => {
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
       <RouterLink
         v-for="art in rows" :key="art.id"
-        :to="`/trade/${art.id}`"
+        :to="`/artwork/${art.id}`"
         class="card-dark group overflow-hidden flex flex-col"
       >
         <!-- Image -->
@@ -100,6 +106,25 @@ const rows = computed(() => {
             loading="lazy"
           />
           <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+
+          <!-- Wishlist button -->
+          <button
+            class="absolute top-3 left-3 w-8 h-8 border border-white/15 bg-black/50 backdrop-blur-sm flex items-center justify-center transition-colors hover:border-[#E8552A]/70 hover:text-[#E8552A]"
+            :class="wishlist.isWishlisted(art.id) ? 'text-[#E8552A] border-[#E8552A]/70 bg-[#E8552A]/10' : 'text-gray-300'"
+            :aria-label="wishlist.isWishlisted(art.id) ? 'Remove from wishlist' : 'Add to wishlist'"
+            @click.prevent="toggleWishlist(art)"
+          >
+            <svg
+              class="w-4 h-4"
+              :class="wishlist.isWishlisted(art.id) ? 'fill-current' : ''"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              viewBox="0 0 24 24"
+            >
+              <path d="M4.318 6.318a4.5 4.5 0 0 1 6.364 0L12 7.636l1.318-1.318a4.5 4.5 0 0 1 6.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 0 1 0-6.364Z" />
+            </svg>
+          </button>
 
           <!-- 24h change badge -->
           <span

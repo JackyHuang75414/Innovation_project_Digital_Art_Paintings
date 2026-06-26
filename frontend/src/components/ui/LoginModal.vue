@@ -2,25 +2,42 @@
 import { ref } from 'vue'
 import { useAuthStore, DEMO_ACCOUNTS } from '@/stores/auth'
 import { useTradingStore } from '@/stores/trading'
+import { useWalletStore } from '@/stores/wallet'
+import { useWishlistStore } from '@/stores/wishlist'
 
+const props = defineProps({
+  initialMode: {
+    type: String,
+    default: 'login',
+  },
+})
 const emit = defineEmits(['close'])
 const auth   = useAuthStore()
 const store  = useTradingStore()
+const wallet = useWalletStore()
+const wishlist = useWishlistStore()
 
+const mode     = ref(props.initialMode === 'register' ? 'register' : 'login')
 const username = ref('')
+const email    = ref('')
 const password = ref('')
 const error    = ref('')
 const loading  = ref(false)
 
 async function submit() {
   if (!username.value || !password.value) { error.value = 'Please enter both fields'; return }
+  if (mode.value === 'register' && !email.value) { error.value = 'Please enter your email'; return }
   loading.value = true
   error.value = ''
-  await new Promise(r => setTimeout(r, 400))  // simulate network
-  const result = await auth.login(username.value.trim(), password.value)
+  const name = username.value.trim()
+  const result = mode.value === 'register'
+    ? await auth.register(name, email.value.trim(), password.value)
+    : await auth.login(name, password.value)
   loading.value = false
   if (!result.ok) { error.value = result.msg; return }
   await store.loadWallet()
+  await wallet.loadConnection()
+  await wishlist.loadMine({ force: true })
   emit('close')
 }
 
@@ -28,6 +45,11 @@ function quickLogin(account) {
   username.value = account.username
   password.value = account.password
   submit()
+}
+
+function switchMode(nextMode) {
+  mode.value = nextMode
+  error.value = ''
 }
 </script>
 
@@ -38,13 +60,13 @@ function quickLogin(account) {
       <!-- Header -->
       <div class="px-6 py-5 border-b border-white/[0.07]">
         <p class="text-[10px] tracking-[0.25em] uppercase text-[#E8552A] font-light mb-0.5">Welcome</p>
-        <p class="font-display italic text-white text-xl">Sign in to ArtEx</p>
+        <p class="font-display italic text-white text-xl">{{ mode === 'login' ? 'Sign in to ArtEx' : 'Create your ArtEx account' }}</p>
       </div>
 
       <div class="px-6 py-5 space-y-5">
 
         <!-- Quick login accounts -->
-        <div>
+        <div v-if="mode === 'login'">
           <p class="text-[10px] tracking-[0.2em] uppercase text-gray-600 mb-2.5">Demo Accounts</p>
           <div class="space-y-1.5">
             <button
@@ -74,7 +96,7 @@ function quickLogin(account) {
 
         <div class="flex items-center gap-3">
           <div class="flex-1 h-px bg-white/[0.07]" />
-          <span class="text-[10px] text-gray-700 uppercase tracking-wide">or enter manually</span>
+          <span class="text-[10px] text-gray-700 uppercase tracking-wide">{{ mode === 'login' ? 'or enter manually' : 'registration details' }}</span>
           <div class="flex-1 h-px bg-white/[0.07]" />
         </div>
 
@@ -84,6 +106,13 @@ function quickLogin(account) {
             v-model="username"
             type="text"
             placeholder="Username"
+            class="w-full bg-[#0d0d10] border border-white/[0.1] text-gray-200 px-3 py-2.5 text-sm outline-none focus:border-white/25 placeholder:text-gray-700"
+          />
+          <input
+            v-if="mode === 'register'"
+            v-model="email"
+            type="email"
+            placeholder="Email"
             class="w-full bg-[#0d0d10] border border-white/[0.1] text-gray-200 px-3 py-2.5 text-sm outline-none focus:border-white/25 placeholder:text-gray-700"
           />
           <input
@@ -100,9 +129,26 @@ function quickLogin(account) {
             :disabled="loading"
             class="w-full py-3 bg-[#E8552A] hover:bg-[#d4461c] disabled:opacity-50 text-white text-[11px] tracking-[0.2em] uppercase font-medium transition-colors"
           >
-            {{ loading ? 'Signing in…' : 'Sign In' }}
+            {{ loading ? (mode === 'login' ? 'Signing in...' : 'Creating...') : (mode === 'login' ? 'Sign In' : 'Create Account') }}
           </button>
         </form>
+
+        <div class="text-center">
+          <button
+            v-if="mode === 'login'"
+            class="text-[11px] tracking-[0.12em] uppercase text-gray-500 hover:text-white transition-colors"
+            @click="switchMode('register')"
+          >
+            Create an account
+          </button>
+          <button
+            v-else
+            class="text-[11px] tracking-[0.12em] uppercase text-gray-500 hover:text-white transition-colors"
+            @click="switchMode('login')"
+          >
+            Back to sign in
+          </button>
+        </div>
 
         <p class="text-[10px] text-gray-700 text-center font-light">
           This is a demo platform. No real funds or transactions.

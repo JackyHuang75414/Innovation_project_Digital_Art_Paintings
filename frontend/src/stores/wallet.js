@@ -1,5 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import {
+  connectWallet,
+  disconnectActiveWallet,
+  disconnectWallet,
+  getWalletConnections,
+} from '@/api/walletConnections'
 
 export const WALLETS = [
   {
@@ -46,12 +52,14 @@ export const WALLETS = [
 ]
 
 export const useWalletStore = defineStore('wallet', () => {
+  const connectionId = ref(null)
   const address     = ref(null)
   const balanceEth  = ref(null)  // ETH or SOL balance
   const chainId     = ref(null)
   const walletType  = ref(null)  // 'metamask' | 'coinbase' | 'phantom' | 'walletconnect'
   const isConnecting = ref(false)
   const connectError = ref(null)
+  const isLoadingConnection = ref(false)
 
   const isConnected   = computed(() => !!address.value)
   const shortAddress  = computed(() =>
@@ -92,6 +100,41 @@ export const useWalletStore = defineStore('wallet', () => {
 
   // ── Connect ────────────────────────────────────────────────────────────────
 
+  function applyConnection(connection) {
+    connectionId.value = connection.id ?? null
+    address.value = connection.address ?? null
+    walletType.value = connection.walletType ?? null
+    chainId.value = connection.chainId ?? null
+    balanceEth.value = connection.balanceNative != null ? String(connection.balanceNative) : null
+  }
+
+  async function persistConnection() {
+    const response = await connectWallet({
+      walletType: walletType.value,
+      address: address.value,
+      chainId: chainId.value,
+      balanceNative: balanceEth.value,
+    })
+    applyConnection(response.data)
+  }
+
+  async function loadConnection() {
+    isLoadingConnection.value = true
+    try {
+      const response = await getWalletConnections()
+      const connections = response.data ?? []
+      if (connections.length > 0) {
+        applyConnection(connections[0])
+      } else {
+        clearLocal()
+      }
+    } catch {
+      clearLocal()
+    } finally {
+      isLoadingConnection.value = false
+    }
+  }
+
   async function connect(walletId) {
     connectError.value = null
     isConnecting.value = true
@@ -103,8 +146,16 @@ export const useWalletStore = defineStore('wallet', () => {
       walletType.value = 'testwallet'
       balanceEth.value = '10.0000'
       chainId.value    = 'test-1337'
-      isConnecting.value = false
-      return { ok: true }
+      try {
+        await persistConnection()
+        return { ok: true }
+      } catch (e) {
+        clearLocal()
+        connectError.value = 'backend_error'
+        return { ok: false, code: 'backend_error', msg: e.message }
+      } finally {
+        isConnecting.value = false
+      }
     }
 
     try {
@@ -131,6 +182,7 @@ export const useWalletStore = defineStore('wallet', () => {
         provider.on?.('accountsChanged', accs => { address.value = accs[0] ?? null })
         provider.on?.('chainChanged',    id  => { chainId.value = id })
 
+        await persistConnection()
         return { ok: true }
       }
 
@@ -145,6 +197,7 @@ export const useWalletStore = defineStore('wallet', () => {
         balanceEth.value = null  // SOL balance would need an RPC call; omit for now
         chainId.value    = 'solana-mainnet'
         window.solana.on?.('disconnect', disconnect)
+        await persistConnection()
         return { ok: true }
       }
 
@@ -163,13 +216,29 @@ export const useWalletStore = defineStore('wallet', () => {
     }
   }
 
-  function disconnect() {
+  function clearLocal() {
     if (walletType.value === 'phantom') window.solana?.disconnect?.()
+    connectionId.value = null
     address.value    = null
     balanceEth.value = null
     chainId.value    = null
     walletType.value = null
     connectError.value = null
+  }
+
+  async function disconnect() {
+    const id = connectionId.value
+    try {
+      if (id) {
+        await disconnectWallet(id)
+      } else {
+        await disconnectActiveWallet()
+      }
+    } catch {
+      // Keep the UI responsive even if the active connection was already gone.
+    } finally {
+      clearLocal()
+    }
   }
 
   function isInstalled(walletId) {
@@ -180,10 +249,10 @@ export const useWalletStore = defineStore('wallet', () => {
   }
 
   return {
-    address, balanceEth, chainId, walletType,
-    isConnecting, connectError,
+    connectionId, address, balanceEth, chainId, walletType,
+    isConnecting, connectError, isLoadingConnection,
     isConnected, shortAddress, activeWallet,
     WALLETS,
-    connect, disconnect, isInstalled,
+    connect, disconnect, clearLocal, loadConnection, isInstalled,
   }
 })

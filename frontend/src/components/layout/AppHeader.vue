@@ -1,10 +1,11 @@
 <script setup>
-import { ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { RouterLink, useRouter } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
 import { usePricesStore, CRYPTOS, FIATS } from '@/stores/prices'
 import { useWalletStore } from '@/stores/wallet'
 import { useAuthStore } from '@/stores/auth'
+import { useWishlistStore } from '@/stores/wishlist'
 import WalletConnectModal from '@/components/ui/WalletConnectModal.vue'
 import LoginModal from '@/components/ui/LoginModal.vue'
 
@@ -12,13 +13,54 @@ const cart   = useCartStore()
 const prices = usePricesStore()
 const wallet = useWalletStore()
 const auth   = useAuthStore()
+const wishlist = useWishlistStore()
+const router = useRouter()
 
 const showCurrencyMenu = ref(false)
 const showWalletModal  = ref(false)
 const showLoginModal   = ref(false)
+const authModalMode    = ref('login')
 
 function selectCrypto(sym) { prices.setCrypto(sym) }
 function selectFiat(code)  { prices.setFiat(code); showCurrencyMenu.value = false }
+
+function openAuth(mode) {
+  authModalMode.value = mode
+  showLoginModal.value = true
+}
+
+function openWallet() {
+  if (!auth.isLoggedIn) {
+    openAuth('login')
+    return
+  }
+  showWalletModal.value = true
+}
+
+function signOut() {
+  auth.logout()
+  wishlist.reset()
+  wallet.clearLocal()
+  router.push('/')
+}
+
+function handleOpenAuth(event) {
+  openAuth(event.detail?.mode === 'register' ? 'register' : 'login')
+}
+
+watch(() => auth.isLoggedIn, loggedIn => {
+  if (loggedIn) {
+    wallet.loadConnection()
+  } else {
+    wallet.clearLocal()
+  }
+})
+
+onMounted(() => {
+  window.addEventListener('artex:open-auth', handleOpenAuth)
+  if (auth.isLoggedIn) wallet.loadConnection()
+})
+onUnmounted(() => window.removeEventListener('artex:open-auth', handleOpenAuth))
 </script>
 
 <template>
@@ -145,7 +187,7 @@ function selectFiat(code)  { prices.setFiat(code); showCurrencyMenu.value = fals
         <button
           v-if="!wallet.isConnected"
           class="hidden sm:flex items-center gap-2 px-3 py-1.5 border border-[#E8552A]/50 hover:border-[#E8552A] text-[#E8552A] text-[11px] tracking-[0.1em] uppercase font-medium transition-colors"
-          @click="showWalletModal = true"
+          @click="openWallet"
         >
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -195,11 +237,50 @@ function selectFiat(code)  { prices.setFiat(code); showCurrencyMenu.value = fals
           >{{ auth.initials }}</span>
         </RouterLink>
         <button
+          v-if="auth.isLoggedIn"
+          class="hidden sm:flex items-center gap-2 px-3 py-1.5 border border-red-500/30 text-red-400 hover:bg-red-500/10 hover:border-red-500/60 text-[11px] tracking-[0.1em] uppercase font-medium transition-colors"
+          aria-label="Sign out"
+          title="Sign out"
+          @click="signOut"
+        >
+          Sign Out
+        </button>
+        <button
+          v-if="auth.isLoggedIn"
+          class="sm:hidden p-2 text-red-400 hover:text-red-300 transition-colors"
+          aria-label="Sign out"
+          title="Sign out"
+          @click="signOut"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75"/>
+          </svg>
+        </button>
+        <button
           v-else
-          class="p-2 text-gray-400 hover:text-white transition-colors"
+          class="hidden sm:flex items-center gap-2 px-3 py-1.5 border border-white/[0.1] hover:border-white/20 text-gray-400 hover:text-white text-[11px] tracking-[0.1em] uppercase font-medium transition-colors"
           aria-label="Sign in"
           title="Sign in"
-          @click="showLoginModal = true"
+          @click="openAuth('login')"
+        >
+          Sign In
+        </button>
+        <button
+          v-if="!auth.isLoggedIn"
+          class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-[#E8552A] hover:bg-[#d4461c] text-white text-[11px] tracking-[0.1em] uppercase font-medium transition-colors"
+          aria-label="Create account"
+          title="Create account"
+          @click="openAuth('register')"
+        >
+          Create Account
+        </button>
+        <button
+          v-if="!auth.isLoggedIn"
+          class="sm:hidden p-2 text-gray-400 hover:text-white transition-colors"
+          aria-label="Sign in"
+          title="Sign in"
+          @click="openAuth('login')"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -213,7 +294,7 @@ function selectFiat(code)  { prices.setFiat(code); showCurrencyMenu.value = fals
   <!-- Modals -->
   <Teleport to="body">
     <WalletConnectModal v-if="showWalletModal" @close="showWalletModal = false" />
-    <LoginModal v-if="showLoginModal" @close="showLoginModal = false" />
+    <LoginModal v-if="showLoginModal" :initial-mode="authModalMode" @close="showLoginModal = false" />
   </Teleport>
 </template>
 

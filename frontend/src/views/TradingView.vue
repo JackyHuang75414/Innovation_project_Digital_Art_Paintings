@@ -4,13 +4,16 @@ import { useRoute } from 'vue-router'
 import { useTradingStore, TOTAL_SHARES, MAINTENANCE_RATE } from '@/stores/trading'
 import { usePricesStore } from '@/stores/prices'
 import { useWalletStore } from '@/stores/wallet'
+import { useAuthStore } from '@/stores/auth'
 import WalletConnectModal from '@/components/ui/WalletConnectModal.vue'
+import LoginModal from '@/components/ui/LoginModal.vue'
 import CryptoPriceBadge from '@/components/ui/CryptoPriceBadge.vue'
 
 const route  = useRoute()
 const store  = useTradingStore()
 const prices = usePricesStore()
 const wallet = useWalletStore()
+const auth   = useAuthStore()
 
 onMounted(store.init)
 onUnmounted(store.destroy)
@@ -33,6 +36,7 @@ const leverage    = ref(10)
 const marginBtc   = ref('')
 const tradeMsg    = ref(null)
 const showWalletModal = ref(false)
+const showLoginModal = ref(false)
 
 const sharesHeld  = computed(() => store.wallet.shares[artworkId.value] || 0)
 const usdBalance  = computed(() => store.wallet.usd)
@@ -56,8 +60,19 @@ const perpLiqPrice = computed(() => {
 })
 
 function requireWallet() {
-  if (!wallet.isConnected) { showWalletModal.value = true; return false }
+  if (!wallet.isConnected) {
+    openWallet()
+    return false
+  }
   return true
+}
+
+function openWallet() {
+  if (!auth.isLoggedIn) {
+    showLoginModal.value = true
+    return
+  }
+  showWalletModal.value = true
 }
 
 async function executeSpot() {
@@ -344,7 +359,7 @@ function timeAgo(ts) {
         <!-- Wallet required banner -->
         <div v-if="!wallet.isConnected" class="mx-4 mt-4 flex items-center justify-between bg-amber-500/10 border border-amber-500/20 px-3 py-2.5">
           <p class="text-[11px] text-amber-400 font-light">Connect a wallet to trade</p>
-          <button class="text-[10px] tracking-[0.1em] uppercase text-amber-400 hover:text-white transition-colors" @click="showWalletModal = true">
+          <button class="text-[10px] tracking-[0.1em] uppercase text-amber-400 hover:text-white transition-colors" @click="openWallet">
             Connect →
           </button>
         </div>
@@ -508,6 +523,7 @@ function timeAgo(ts) {
     <!-- Wallet modal -->
     <Teleport to="body">
       <WalletConnectModal v-if="showWalletModal" @close="showWalletModal = false" />
+      <LoginModal v-if="showLoginModal" @close="showLoginModal = false" />
     </Teleport>
   </div>
 </template>

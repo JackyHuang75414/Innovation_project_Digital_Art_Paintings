@@ -1,17 +1,21 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { usePricesStore, CRYPTOS, FIATS } from '@/stores/prices'
 import { useTradingStore, TOTAL_SHARES } from '@/stores/trading'
 import { useAuthStore } from '@/stores/auth'
+import { useWishlistStore } from '@/stores/wishlist'
 import CryptoPriceBadge from '@/components/ui/CryptoPriceBadge.vue'
 
 const prices = usePricesStore()
 const store  = useTradingStore()
 const auth   = useAuthStore()
+const wishlist = useWishlistStore()
 const router = useRouter()
 
-const activeTab = ref('holdings')  // holdings | positions | orders | monitor | settings
+const activeTab = ref('holdings')  // holdings | wishlist | positions | orders | monitor | settings
+
+onMounted(() => wishlist.loadMine())
 
 // ── Settings state ────────────────────────────────────────────────────────────
 const LANGUAGES = [
@@ -51,7 +55,12 @@ function saveProfile() {
 
 function logout() {
   auth.logout()
+  wishlist.reset()
   router.push('/')
+}
+
+async function toggleWishlist(artwork) {
+  await wishlist.toggle(artwork)
 }
 
 // ── Holdings ──────────────────────────────────────────────────────────────────
@@ -221,6 +230,7 @@ function timeAgo(ts) {
       <button
         v-for="tab in [
           { id: 'holdings',  label: 'Holdings',   badge: holdings.length },
+          { id: 'wishlist',  label: 'Wishlist',   badge: wishlist.items.length },
           { id: 'positions', label: 'Positions',  badge: positions.length },
           { id: 'orders',    label: 'TP / SL',    badge: store.wallet.tpslOrders.length },
           { id: 'monitor',   label: '🦞 AI Monitor' },
@@ -295,6 +305,48 @@ function timeAgo(ts) {
             </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ WISHLIST ══════════════ -->
+    <div v-else-if="activeTab === 'wishlist'">
+      <div v-if="wishlist.items.length === 0" class="py-20 text-center">
+        <p class="font-display italic text-gray-600 text-2xl mb-2">No saved works yet</p>
+        <p class="text-gray-700 text-sm font-light mb-6">Save artworks from Discover or artwork detail pages.</p>
+        <RouterLink to="/browse" class="btn-primary text-sm px-6 py-2.5">Discover Works</RouterLink>
+      </div>
+
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <RouterLink
+          v-for="art in wishlist.items"
+          :key="art.id"
+          :to="`/artwork/${art.id}`"
+          class="card-dark group overflow-hidden flex flex-col"
+        >
+          <div class="relative overflow-hidden aspect-[4/3] bg-[#0d0d10]">
+            <img
+              :src="art.imageUrl"
+              :alt="art.title"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              loading="lazy"
+            />
+            <button
+              class="absolute top-3 right-3 w-8 h-8 border border-[#E8552A]/70 bg-[#E8552A]/10 text-[#E8552A] flex items-center justify-center transition-colors hover:bg-[#E8552A]/20"
+              aria-label="Remove from wishlist"
+              @click.prevent="toggleWishlist(art)"
+            >
+              <svg class="w-4 h-4 fill-current" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M4.318 6.318a4.5 4.5 0 0 1 6.364 0L12 7.636l1.318-1.318a4.5 4.5 0 0 1 6.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 0 1 0-6.364Z" />
+              </svg>
+            </button>
+          </div>
+          <div class="p-4 flex flex-col gap-1 flex-1">
+            <p class="text-[10px] tracking-[0.18em] uppercase text-gray-600 font-light">{{ art.artistName }}</p>
+            <p class="font-display italic text-gray-100 text-base leading-snug mb-1">{{ art.title }}</p>
+            <p class="text-[11px] text-gray-500 font-light">{{ art.medium }}</p>
+            <p class="text-sm font-medium text-gray-100 mt-auto pt-3 border-t border-white/[0.05]">€{{ art.price }}</p>
+          </div>
+        </RouterLink>
       </div>
     </div>
 

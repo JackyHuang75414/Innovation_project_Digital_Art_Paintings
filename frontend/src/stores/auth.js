@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { loginUser, logoutUser } from '@/api/user'
+import { loginUser, logoutUser, registerUser } from '@/api/user'
 
 export const DEMO_ACCOUNTS = [
   {
@@ -53,14 +53,7 @@ export const useAuthStore = defineStore('auth', () => {
   const initials    = computed(() => user.value?.initials ?? '')
   const color       = computed(() => user.value?.color ?? '#E8552A')
 
-  async function login(username, password) {
-    let result
-    try {
-      result = await loginUser(username, password)
-    } catch (e) {
-      return { ok: false, msg: e.message || 'Invalid username or password' }
-    }
-
+  function applyLoginResult(username, result) {
     const demoMeta = DEMO_ACCOUNTS.find(a => a.username === username) ?? {}
     const profile = {
       id: result.user.id,
@@ -78,6 +71,25 @@ export const useAuthStore = defineStore('auth', () => {
     return { ok: true, account: profile }
   }
 
+  async function login(username, password) {
+    try {
+      const result = await loginUser(username, password)
+      return applyLoginResult(username, result)
+    } catch (e) {
+      return { ok: false, msg: e.message || 'Invalid username or password' }
+    }
+  }
+
+  async function register(username, email, password) {
+    try {
+      await registerUser(username, email, password)
+      const result = await loginUser(username, password)
+      return applyLoginResult(username, result)
+    } catch (e) {
+      return { ok: false, msg: e.message || 'Registration failed' }
+    }
+  }
+
   function loginAsGuest() {
     return login('demo', 'demo123')
   }
@@ -88,5 +100,5 @@ export const useAuthStore = defineStore('auth', () => {
     logoutUser()
   }
 
-  return { user, isLoggedIn, isPaid, displayName, initials, color, login, loginAsGuest, logout, DEMO_ACCOUNTS }
+  return { user, isLoggedIn, isPaid, displayName, initials, color, login, register, loginAsGuest, logout, DEMO_ACCOUNTS }
 })

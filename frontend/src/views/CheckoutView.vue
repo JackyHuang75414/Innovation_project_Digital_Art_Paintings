@@ -3,7 +3,7 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
 import QRCode from 'qrcode'
-import { generateBtcAddress, getBtcReceived, EUR_TO_BTC, luhn } from '@/api/payments'
+import { confirmDemoPayment, createBitcoinPayment, getBitcoinPayment, luhn } from '@/api/payments'
 import { createOrder } from '@/api/orders'
 
 const cart = useCartStore()
@@ -21,9 +21,11 @@ const processing = ref(false)
 const formError = ref('')
 const paymentSuccess = ref(false)
 const orderNumber = ref('')
+const paymentStatus = ref('')
+const pendingOrder = ref(null)
 
-async function handleSuccess() {
-  const payload = {
+function buildOrderPayload() {
+  return {
     customerName: name.value.trim(),
     customerEmail: email.value.trim(),
     customerPhone: '',
@@ -39,8 +41,24 @@ async function handleSuccess() {
       quantity: item.quantity,
     })),
   }
-  const { data } = await createOrder(payload)
+}
+
+async function createPendingOrderOnce() {
+  if (pendingOrder.value) return pendingOrder.value
+  const { data } = await createOrder(buildOrderPayload())
+  pendingOrder.value = data
   orderNumber.value = data.orderNo
+  return data
+}
+
+async function handleCardSuccess() {
+  const order = await createPendingOrderOnce()
+  const { data: payment } = await confirmDemoPayment({
+    orderId: order.id,
+    paymentMethod: 'card',
+  })
+  orderNumber.value = payment.orderNo
+  paymentStatus.value = payment.orderStatus
   paymentSuccess.value = true
   cart.clear()
 }
@@ -109,7 +127,7 @@ async function submitStripe() {
     } else {
       // Production: POST paymentMethod.id to backend → /api/payments/charge
       console.log('[Stripe] paymentMethod.id:', paymentMethod.id)
-      await handleSuccess()
+      await handleCardSuccess()
     }
   } catch (err) {
     formError.value = err.message || 'Could not create order.'
@@ -153,7 +171,7 @@ async function submitDemo() {
   processing.value = true
   try {
     await new Promise(r => setTimeout(r, 1500))
-    await handleSuccess()
+    await handleCardSuccess()
   } catch (err) {
     formError.value = err.message || 'Could not create order.'
   } finally {
@@ -168,17 +186,27 @@ const btcError = ref('')
 const qrDataUrl = ref('')
 const btcPaid = ref(false)
 const copied = ref(false)
+const btcPaymentId = ref(null)
+const btcAmount = ref('')
+const btcReceivedSatoshi = ref(0)
 let pollTimer = null
 
-const btcAmount = computed(() => (cart.total * EUR_TO_BTC).toFixed(8))
 const btcUri = computed(() => `bitcoin:${btcAddress.value}?amount=${btcAmount.value}`)
 
 async function loadBitcoin() {
   if (btcAddress.value || method.value !== 'bitcoin') return
+  if (!name.value.trim()) { formError.value = 'Please enter your full name before generating a Bitcoin address.'; return }
+  if (!email.value.trim()) { formError.value = 'Please enter your email before generating a Bitcoin address.'; return }
   btcLoading.value = true
   btcError.value = ''
+  formError.value = ''
   try {
-    btcAddress.value = await generateBtcAddress()
+    const order = await createPendingOrderOnce()
+    const { data } = await createBitcoinPayment({ orderId: order.id })
+    btcPaymentId.value = data.paymentId
+    btcAddress.value = data.address
+    btcAmount.value = data.expectedBtc
+    btcReceivedSatoshi.value = data.receivedSatoshi ?? 0
     qrDataUrl.value = await QRCode.toDataURL(btcUri.value, {
       width: 192,
       margin: 1,
@@ -186,7 +214,7 @@ async function loadBitcoin() {
     })
     startBtcPolling()
   } catch (err) {
-    btcError.value = 'Could not reach BlockCypher testnet. Check your network.'
+    btcError.value = err.message || 'Could not create Bitcoin testnet payment.'
     console.error(err)
   } finally {
     btcLoading.value = false
@@ -195,16 +223,16 @@ async function loadBitcoin() {
 
 function startBtcPolling() {
   pollTimer = setInterval(async () => {
-    if (!btcAddress.value) return
-    const received = await getBtcReceived(btcAddress.value)
-    if (received > 0) {
+    if (!btcPaymentId.value) return
+    const { data } = await getBitcoinPayment(btcPaymentId.value)
+    btcReceivedSatoshi.value = data.receivedSatoshi ?? 0
+    if (data.status === 'paid' || data.paymentStatus === 'succeeded') {
       btcPaid.value = true
       stopBtcPolling()
-      try {
-        await handleSuccess()
-      } catch (err) {
-        formError.value = err.message || 'Could not create order.'
-      }
+      orderNumber.value = data.orderNo
+      paymentStatus.value = 'paid'
+      paymentSuccess.value = true
+      cart.clear()
     }
   }, 12000)
 }
@@ -220,12 +248,22 @@ async function copyAddress() {
 }
 
 async function simulateBtcPayment() {
-  stopBtcPolling()
-  btcPaid.value = true
   try {
-    await handleSuccess()
+    if (!btcPaymentId.value) return
+    const { data } = await getBitcoinPayment(btcPaymentId.value)
+    btcReceivedSatoshi.value = data.receivedSatoshi ?? 0
+    if (data.status === 'paid' || data.paymentStatus === 'succeeded') {
+      btcPaid.value = true
+      stopBtcPolling()
+      orderNumber.value = data.orderNo
+      paymentStatus.value = 'paid'
+      paymentSuccess.value = true
+      cart.clear()
+    } else {
+      formError.value = 'No Bitcoin testnet payment received yet.'
+    }
   } catch (err) {
-    formError.value = err.message || 'Could not create order.'
+    formError.value = err.message || 'Could not check Bitcoin payment.'
   }
 }
 
@@ -284,7 +322,8 @@ const orderTotal = computed(() => cart.total + shipping.value)
     <p class="text-[11px] tracking-[0.25em] uppercase text-gray-400 font-light mb-2">Order number</p>
     <p class="font-display italic text-2xl text-[#E8552A] mb-8">{{ orderNumber }}</p>
     <p class="text-sm text-gray-500 font-light mb-10 max-w-sm mx-auto leading-relaxed">
-      Thank you, {{ name }}. A confirmation will be sent to {{ email }}. Your prints will be dispatched within 24 hours.
+      Thank you, {{ name }}. Your payment is {{ paymentStatus || 'paid' }} and a confirmation will be sent to {{ email }}.
+      Your prints will be dispatched within 24 hours.
     </p>
     <RouterLink to="/" class="btn-primary">Back to Home</RouterLink>
   </div>
@@ -510,17 +549,19 @@ const orderTotal = computed(() => cart.total + shipping.value)
                   <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"/>
                   <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-400"/>
                 </span>
-                <p class="text-xs text-gray-500 font-light tracking-wide">Awaiting payment — polling every 12 seconds</p>
+                <p class="text-xs text-gray-500 font-light tracking-wide">
+                  Awaiting payment — {{ btcReceivedSatoshi }} satoshi received · polling every 12 seconds
+                </p>
               </div>
 
               <!-- Demo button -->
               <div class="pt-2">
-                <p class="text-[10px] tracking-[0.2em] uppercase text-gray-400 font-light mb-3">Demo only</p>
+                <p class="text-[10px] tracking-[0.2em] uppercase text-gray-400 font-light mb-3">Manual check</p>
                 <button
                   class="text-[11px] tracking-[0.2em] uppercase text-gray-600 hover:text-gray-900 border border-gray-300 hover:border-gray-900 px-5 py-2.5 transition-colors font-light"
                   @click="simulateBtcPayment"
                 >
-                  Simulate Payment Received
+                  Check Payment Now
                 </button>
               </div>
             </div>
