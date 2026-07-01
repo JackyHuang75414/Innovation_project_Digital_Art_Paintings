@@ -613,6 +613,30 @@ INSERT INTO artists (id, name, country, bio) VALUES
   (
     4, 'Refik Anadol', 'Turkey',
     'Refik Anadol is a media artist whose practice sits at the intersection of AI research and architecture.'
+  ),
+  (
+    5, 'Lina Ortega', 'Spain',
+    'Lina Ortega creates luminous generative compositions inspired by memory systems, maps and archival interfaces.'
+  ),
+  (
+    6, 'Theo Nakamura', 'Japan',
+    'Theo Nakamura works with simulated machines, orbital diagrams and minimalist computational forms.'
+  ),
+  (
+    7, 'Mira Kova', 'Serbia',
+    'Mira Kova builds synthetic landscapes from noise fields, weather data and imagined network topologies.'
+  ),
+  (
+    8, 'Amara Singh', 'India',
+    'Amara Singh explores digital architecture, signal flow and ritual geometry through bold vector systems.'
+  ),
+  (
+    9, 'Jules Moreau', 'France',
+    'Jules Moreau makes quiet conceptual works about ledgers, receipts, timestamps and machine memory.'
+  ),
+  (
+    10, 'Nia Okafor', 'Nigeria',
+    'Nia Okafor combines saturated colour, abstract city scans and data-driven visual rhythm.'
   );
 
 INSERT INTO tags (id, name, slug) VALUES
@@ -635,7 +659,19 @@ INSERT INTO tags (id, name, slug) VALUES
   (17, 'Immersive', 'immersive'),
   (18, 'Machine Learning', 'machine-learning'),
   (19, 'MoMA', 'moma'),
-  (20, 'Living Archive', 'living-archive');
+  (20, 'Living Archive', 'living-archive'),
+  (21, 'Neural Color', 'neural-color'),
+  (22, 'Synthetic Landscape', 'synthetic-landscape'),
+  (23, 'Chain Geometry', 'chain-geometry'),
+  (24, 'Light Field', 'light-field'),
+  (25, 'Cyber Minimal', 'cyber-minimal'),
+  (26, 'Signal Mapping', 'signal-mapping'),
+  (27, 'Abstract Print', 'abstract-print'),
+  (28, 'Token Study', 'token-study'),
+  (29, 'Gradient System', 'gradient-system'),
+  (30, 'Digital Architecture', 'digital-architecture'),
+  (31, 'Algorithmic Bloom', 'algorithmic-bloom'),
+  (32, 'Data Weather', 'data-weather');
 
 INSERT INTO sizes (id, name, price_delta, sort_order) VALUES
   (1, 'A4 Print', 0.00, 10),
@@ -696,6 +732,146 @@ INSERT INTO artworks (
     0.88, 'AI Living Archive', '1 / 1', 'Landscape', 'Blue', '70 x 50 cm', 2022,
     'Unsupervised fed MoMA''s public collection into a machine learning model that dreamed its own interpretation of the canon.',
     'Limited', 8, 68, 4
+  ),
+  (
+    7, 5, 2, 'Neon Memory Grid',
+    '/artworks/neon-memory-grid.svg', '/artworks/neon-memory-grid.svg',
+    1.15, 'Generative Vector', 'Edition of 12', 'Square', 'Mixed', '60 x 60 cm', 2026,
+    'A luminous grid of remembered signals, built from layered geometry and archival colour fields.',
+    'New', 24, 54, 5
+  ),
+  (
+    8, 8, 2, 'Liquid Data Cathedral',
+    '/artworks/liquid-data-cathedral.svg', '/artworks/liquid-data-cathedral.svg',
+    1.72, 'AI Data Sculpture', '1 / 1', 'Square', 'Blue', '80 x 80 cm', 2026,
+    'A vaulted structure of synthetic data, suspended between sacred geometry and machine vision.',
+    'Trending', 15, 88, 12
+  ),
+  (
+    9, 7, 2, 'Blue Noise Archive',
+    '/artworks/blue-noise-archive.svg', '/artworks/blue-noise-archive.svg',
+    0.94, 'Digital Abstract', 'Edition of 25', 'Square', 'Blue', '50 x 50 cm', 2025,
+    'An atmospheric study of noisy memory, soft signals and drifting archival light.',
+    NULL, 30, 43, 3
+  ),
+  (
+    10, 5, 2, 'Chrome Bloom Protocol',
+    '/artworks/chrome-bloom-protocol.svg', '/artworks/chrome-bloom-protocol.svg',
+    2.35, 'Algorithmic Bloom', '1 / 1', 'Square', 'Red', '70 x 70 cm', 2026,
+    'A polished synthetic flower generated from mirrored petals and protocol-like symmetry.',
+    'Limited', 10, 76, 9
+  ),
+  (
+    11, 10, 2, 'Solar Fragment Study',
+    '/artworks/solar-fragment-study.svg', '/artworks/solar-fragment-study.svg',
+    1.48, 'Digital Painting', 'Edition of 15', 'Square', 'Orange', '60 x 60 cm', 2025,
+    'A concentrated solar form fractured into layered heat, ritual marks and dark core geometry.',
+    'Trending', 18, 70, 8
+  ),
+  (
+    12, 7, 2, 'Velvet Signal Map',
+    '/artworks/velvet-signal-map.svg', '/artworks/velvet-signal-map.svg',
+    0.82, 'Signal Mapping', 'Edition of 30', 'Landscape', 'Purple', '70 x 50 cm', 2026,
+    'A soft map of competing signals, shaped like weather patterns over an invisible network.',
+    NULL, 32, 39, 2
+  ),
+  (
+    13, 9, 2, 'Monolith Rain Index',
+    '/artworks/monolith-rain-index.svg', '/artworks/monolith-rain-index.svg',
+    1.26, 'Conceptual Digital', 'Edition of 20', 'Portrait', 'Black', '50 x 70 cm', 2025,
+    'A severe monolith of falling data, indexed by cold lines and machine-readable traces.',
+    NULL, 20, 51, 4
+  ),
+  (
+    14, 8, 2, 'Opal Circuit Garden',
+    '/artworks/opal-circuit-garden.svg', '/artworks/opal-circuit-garden.svg',
+    1.05, 'Vector System', 'Edition of 24', 'Square', 'Green', '60 x 60 cm', 2026,
+    'A garden of circuit paths where nodes bloom like synthetic opals in clean morning light.',
+    'New', 26, 57, 5
+  ),
+  (
+    15, 6, 2, 'Pixel Tide Window',
+    '/artworks/pixel-tide-window.svg', '/artworks/pixel-tide-window.svg',
+    0.68, 'Pixel Study', 'Edition of 40', 'Square', 'Blue', '45 x 45 cm', 2025,
+    'A crisp pixel window where tide, colour and modular memory collapse into a small square.',
+    NULL, 40, 34, 2
+  ),
+  (
+    16, 10, 2, 'Ember Dream Ledger',
+    '/artworks/ember-dream-ledger.svg', '/artworks/ember-dream-ledger.svg',
+    1.98, 'Digital Painting', 'Edition of 10', 'Portrait', 'Orange', '50 x 70 cm', 2026,
+    'A ledger of heat and ritual, recording a flame-like form against a dark computational ground.',
+    'Limited', 12, 82, 10
+  ),
+  (
+    17, 6, 2, 'Glass Orbit Machine',
+    '/artworks/glass-orbit-machine.svg', '/artworks/glass-orbit-machine.svg',
+    1.64, 'Orbital Diagram', 'Edition of 16', 'Square', 'White', '60 x 60 cm', 2025,
+    'An elegant orbital machine drawn with translucent loops, glass logic and precise motion.',
+    'Trending', 16, 74, 7
+  ),
+  (
+    18, 7, 2, 'Spectral Harbor',
+    '/artworks/spectral-harbor.svg', '/artworks/spectral-harbor.svg',
+    1.22, 'Synthetic Landscape', 'Edition of 18', 'Landscape', 'Blue', '80 x 50 cm', 2026,
+    'A spectral harbor with sail-like data structures floating between sea, code and horizon.',
+    NULL, 22, 49, 3
+  ),
+  (
+    19, 5, 2, 'Lattice of Soft Machines',
+    '/artworks/lattice-of-soft-machines.svg', '/artworks/lattice-of-soft-machines.svg',
+    0.96, 'Abstract Print', 'Edition of 35', 'Square', 'Mixed', '60 x 60 cm', 2025,
+    'A warm lattice where machine parts become soft, decorative and almost botanical.',
+    NULL, 35, 45, 3
+  ),
+  (
+    20, 9, 2, 'Cosmic Receipt',
+    '/artworks/cosmic-receipt.svg', '/artworks/cosmic-receipt.svg',
+    1.34, 'Token Study', 'Edition of 20', 'Portrait', 'White', '50 x 70 cm', 2026,
+    'A receipt-like token drifting through a small cosmos of transaction marks and distant dots.',
+    'New', 20, 58, 6
+  ),
+  (
+    21, 7, 2, 'Magenta Weather System',
+    '/artworks/magenta-weather-system.svg', '/artworks/magenta-weather-system.svg',
+    1.18, 'Data Weather', 'Edition of 22', 'Landscape', 'Purple', '80 x 50 cm', 2025,
+    'A volatile weather system of magenta bands, cyan pressure lines and warm synthetic sun.',
+    NULL, 24, 52, 4
+  ),
+  (
+    22, 8, 2, 'Green Room for Algorithms',
+    '/artworks/green-room-for-algorithms.svg', '/artworks/green-room-for-algorithms.svg',
+    1.44, 'Digital Architecture', 'Edition of 14', 'Square', 'Green', '70 x 70 cm', 2026,
+    'A green architectural room where algorithms gather around a dark computational core.',
+    'Trending', 14, 69, 8
+  ),
+  (
+    23, 10, 2, 'Amber Vector Field',
+    '/artworks/amber-vector-field.svg', '/artworks/amber-vector-field.svg',
+    0.74, 'Vector Field', 'Edition of 32', 'Landscape', 'Orange', '70 x 50 cm', 2025,
+    'A clean amber field of directional vectors, warm intervals and measured digital force.',
+    NULL, 32, 41, 2
+  ),
+  (
+    24, 5, 2, 'Blackbox Orchid',
+    '/artworks/blackbox-orchid.svg', '/artworks/blackbox-orchid.svg',
+    2.10, 'Algorithmic Bloom', '1 / 1', 'Square', 'Purple', '70 x 70 cm', 2026,
+    'A radiant orchid grown inside a blackbox system, luminous and mathematically restrained.',
+    'Limited', 8, 86, 11
+  ),
+  (
+    25, 6, 2, 'Ice Bound Token',
+    '/artworks/ice-bound-token.svg', '/artworks/ice-bound-token.svg',
+    1.08, 'Token Study', 'Edition of 28', 'Square', 'Blue', '60 x 60 cm', 2026,
+    'A frozen token crystal, cut by clean axes and suspended in a pale protocol field.',
+    'New', 28, 47, 4
+  ),
+  (
+    26, 10, 2, 'Redshift City Scan',
+    '/artworks/redshift-city-scan.svg', '/artworks/redshift-city-scan.svg',
+    1.56, 'City Data Scan', 'Edition of 12', 'Landscape', 'Red', '80 x 50 cm', 2025,
+    'A redshifted city profile scanned by heat, movement and horizontal streams of urban data.',
+    'Trending', 12, 73, 9
   );
 
 INSERT INTO artwork_tags (artwork_id, tag_id) VALUES
@@ -704,7 +880,27 @@ INSERT INTO artwork_tags (artwork_id, tag_id) VALUES
   (3, 5), (3, 6), (3, 9), (3, 10),
   (4, 11), (4, 12), (4, 13), (4, 14),
   (5, 15), (5, 16), (5, 17), (5, 3),
-  (6, 15), (6, 18), (6, 19), (6, 20);
+  (6, 15), (6, 18), (6, 19), (6, 20),
+  (7, 21), (7, 23), (7, 24), (7, 29),
+  (8, 15), (8, 16), (8, 30), (8, 24),
+  (9, 22), (9, 26), (9, 29), (9, 27),
+  (10, 31), (10, 23), (10, 25), (10, 29),
+  (11, 24), (11, 27), (11, 29), (11, 28),
+  (12, 26), (12, 32), (12, 22), (12, 29),
+  (13, 11), (13, 25), (13, 26), (13, 28),
+  (14, 23), (14, 30), (14, 31), (14, 24),
+  (15, 13), (15, 25), (15, 28), (15, 27),
+  (16, 24), (16, 28), (16, 27), (16, 29),
+  (17, 23), (17, 25), (17, 30), (17, 24),
+  (18, 22), (18, 24), (18, 26), (18, 32),
+  (19, 27), (19, 31), (19, 23), (19, 29),
+  (20, 28), (20, 11), (20, 25), (20, 26),
+  (21, 32), (21, 26), (21, 22), (21, 29),
+  (22, 30), (22, 23), (22, 25), (22, 31),
+  (23, 27), (23, 26), (23, 29), (23, 24),
+  (24, 31), (24, 25), (24, 21), (24, 29),
+  (25, 28), (25, 23), (25, 25), (25, 24),
+  (26, 32), (26, 22), (26, 26), (26, 30);
 
 INSERT INTO artwork_sizes (artwork_id, size_id, price_override, is_available)
 SELECT a.id, s.id, NULL, 1
@@ -721,7 +917,47 @@ INSERT INTO artwork_recommendations (artwork_id, recommended_artwork_id, score, 
   (3, 2, 0.8400, 'Same Xcopy collector base'),
   (3, 4, 0.7600, 'Scarce conceptual market'),
   (5, 6, 0.8800, 'Refik Anadol AI installations'),
-  (6, 5, 0.7400, 'AI data sculpture collector match');
+  (6, 5, 0.7400, 'AI data sculpture collector match'),
+  (7, 10, 0.8200, 'Shared generative colour systems'),
+  (7, 19, 0.7800, 'Grid-based abstract collector match'),
+  (8, 22, 0.8500, 'Digital architecture and AI data sculpture overlap'),
+  (8, 17, 0.7900, 'Precise machine geometry'),
+  (9, 12, 0.8000, 'Synthetic landscape and signal mapping'),
+  (9, 18, 0.7600, 'Atmospheric blue landscape pairing'),
+  (10, 24, 0.8800, 'Algorithmic bloom collector path'),
+  (10, 7, 0.7400, 'Neural colour and mirrored systems'),
+  (11, 16, 0.8400, 'Warm digital painting collector match'),
+  (11, 23, 0.7300, 'Amber vector and solar palette'),
+  (12, 21, 0.8600, 'Weather system and signal field pairing'),
+  (12, 9, 0.7200, 'Soft signal archive overlap'),
+  (13, 20, 0.7900, 'Conceptual ledger and index works'),
+  (13, 25, 0.7000, 'Token-oriented minimal systems'),
+  (14, 22, 0.8300, 'Architectural circuit logic'),
+  (14, 19, 0.7200, 'Soft machine lattice pairing'),
+  (15, 25, 0.8000, 'Pixel and token minimalism'),
+  (15, 4, 0.6900, 'Minimal digital art lineage'),
+  (16, 11, 0.8400, 'Warm heat-field works'),
+  (16, 20, 0.7400, 'Ledger and token narrative'),
+  (17, 8, 0.7900, 'Machine diagram and data cathedral'),
+  (17, 25, 0.7600, 'Precise blue-white token geometry'),
+  (18, 9, 0.8100, 'Blue atmospheric landscape'),
+  (18, 21, 0.7500, 'Weather and harbor systems'),
+  (19, 14, 0.7700, 'Soft machine and circuit garden'),
+  (19, 7, 0.7200, 'Grid and lattice language'),
+  (20, 13, 0.8300, 'Conceptual index and receipt works'),
+  (20, 25, 0.7400, 'Token study collector route'),
+  (21, 12, 0.8600, 'Magenta weather and velvet signal'),
+  (21, 18, 0.7300, 'Landscape weather pairing'),
+  (22, 8, 0.8200, 'Digital architecture and cathedral structure'),
+  (22, 14, 0.7900, 'Green computational spaces'),
+  (23, 11, 0.7500, 'Amber palette continuity'),
+  (23, 26, 0.7100, 'Vector field and city scan'),
+  (24, 10, 0.8800, 'Algorithmic bloom pairing'),
+  (24, 7, 0.7400, 'Neural color collector path'),
+  (25, 15, 0.8100, 'Minimal token and pixel study'),
+  (25, 17, 0.7600, 'Geometric machine clarity'),
+  (26, 21, 0.8200, 'Redshift weather and data scans'),
+  (26, 23, 0.7300, 'Urban vector rhythm');
 
 INSERT INTO users (
   id, name, email, password_hash, display_name, initials, avatar_color, bio,
@@ -787,7 +1023,27 @@ INSERT INTO artwork_markets (
   (3, 1000000, 1.92000000, 1.98000000, 39100.00, 3.1250, 1),
   (4, 1000000, 3.20000000, 3.11000000, 55200.00, -2.8125, 1),
   (5, 1000000, 1.40000000, 1.46000000, 47600.00, 4.2857, 1),
-  (6, 1000000, 0.88000000, 0.91000000, 22000.00, 3.4091, 1);
+  (6, 1000000, 0.88000000, 0.91000000, 22000.00, 3.4091, 1),
+  (7, 1000000, 1.15000000, 1.18000000, 18400.00, 2.6087, 1),
+  (8, 1000000, 1.72000000, 1.76000000, 22600.00, 2.3256, 1),
+  (9, 1000000, 0.94000000, 0.92000000, 9800.00, -2.1277, 1),
+  (10, 1000000, 2.35000000, 2.43000000, 34200.00, 3.4043, 1),
+  (11, 1000000, 1.48000000, 1.52000000, 20500.00, 2.7027, 1),
+  (12, 1000000, 0.82000000, 0.80000000, 7600.00, -2.4390, 1),
+  (13, 1000000, 1.26000000, 1.24000000, 11200.00, -1.5873, 1),
+  (14, 1000000, 1.05000000, 1.09000000, 15100.00, 3.8095, 1),
+  (15, 1000000, 0.68000000, 0.70000000, 6400.00, 2.9412, 1),
+  (16, 1000000, 1.98000000, 2.04000000, 28900.00, 3.0303, 1),
+  (17, 1000000, 1.64000000, 1.61000000, 19400.00, -1.8293, 1),
+  (18, 1000000, 1.22000000, 1.25000000, 13700.00, 2.4590, 1),
+  (19, 1000000, 0.96000000, 0.99000000, 8900.00, 3.1250, 1),
+  (20, 1000000, 1.34000000, 1.31000000, 12100.00, -2.2388, 1),
+  (21, 1000000, 1.18000000, 1.22000000, 15900.00, 3.3898, 1),
+  (22, 1000000, 1.44000000, 1.50000000, 24800.00, 4.1667, 1),
+  (23, 1000000, 0.74000000, 0.72000000, 7100.00, -2.7027, 1),
+  (24, 1000000, 2.10000000, 2.19000000, 36500.00, 4.2857, 1),
+  (25, 1000000, 1.08000000, 1.11000000, 11800.00, 2.7778, 1),
+  (26, 1000000, 1.56000000, 1.62000000, 27300.00, 3.8462, 1);
 
 INSERT INTO artwork_price_history (artwork_id, price, recorded_at) VALUES
   (1, 6.90000000, DATE_SUB(NOW(), INTERVAL 24 HOUR)),
@@ -799,6 +1055,19 @@ INSERT INTO artwork_price_history (artwork_id, price, recorded_at) VALUES
   (3, 1.92000000, DATE_SUB(NOW(), INTERVAL 24 HOUR)),
   (3, 1.95000000, DATE_SUB(NOW(), INTERVAL 12 HOUR)),
   (3, 1.98000000, NOW());
+
+INSERT INTO artwork_price_history (artwork_id, price, recorded_at)
+SELECT artwork_id, initial_share_price, DATE_SUB(NOW(), INTERVAL 24 HOUR)
+FROM artwork_markets
+WHERE artwork_id BETWEEN 7 AND 26
+UNION ALL
+SELECT artwork_id, (initial_share_price + current_share_price) / 2, DATE_SUB(NOW(), INTERVAL 12 HOUR)
+FROM artwork_markets
+WHERE artwork_id BETWEEN 7 AND 26
+UNION ALL
+SELECT artwork_id, current_share_price, NOW()
+FROM artwork_markets
+WHERE artwork_id BETWEEN 7 AND 26;
 
 INSERT INTO order_book_orders (
   artwork_id, user_id, side, order_type, price, size, remaining_size, status, is_vmm
