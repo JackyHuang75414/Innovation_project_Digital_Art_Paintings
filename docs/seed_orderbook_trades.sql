@@ -102,7 +102,7 @@ WHERE id = 3;
 SET SQL_SAFE_UPDATES = 1;
 
 -- Verify — expected: order_book_orders=72, trade_executions=90, artwork_markets=6
-SELECT 'order_book_orders' AS tbl, COUNT(*) AS rows FROM order_book_orders
+SELECT 'order_book_orders' AS tbl, COUNT(*) AS cnt FROM order_book_orders
 UNION ALL
 SELECT 'trade_executions', COUNT(*) FROM trade_executions
 UNION ALL
