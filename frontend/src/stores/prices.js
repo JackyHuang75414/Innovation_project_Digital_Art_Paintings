@@ -30,9 +30,14 @@ export const usePricesStore = defineStore('prices', () => {
   const selectedFiat   = ref(localStorage.getItem('artex_fiat')   || 'USD')
 
   let _timer = null
+  let _lastFetch = 0
+  const CACHE_MS = 90_000 // don't re-hit CoinGecko more than once per 90 s
 
   // ── Fetch from CoinGecko (via Vite proxy) ────────────────────────────────────
   async function fetchPrices() {
+    const now = Date.now()
+    if (now - _lastFetch < CACHE_MS) return // still fresh — skip
+    _lastFetch = now
     try {
       const ids = 'bitcoin,ethereum,binancecoin,solana,ripple'
       const res = await fetch(
@@ -51,8 +56,11 @@ export const usePricesStore = defineStore('prices', () => {
     } catch { /* keep seed values on error */ }
   }
 
-  function startPolling() { fetchPrices(); _timer = setInterval(fetchPrices, 60_000) }
-  function stopPolling()  { clearInterval(_timer) }
+  function startPolling() {
+    fetchPrices()
+    if (!_timer) _timer = setInterval(fetchPrices, 120_000) // poll every 2 min
+  }
+  function stopPolling() { clearInterval(_timer); _timer = null }
 
   // ── User preferences ─────────────────────────────────────────────────────────
   function setCrypto(sym) { selectedCrypto.value = sym; localStorage.setItem('artex_crypto', sym) }

@@ -147,7 +147,7 @@ function fmtK(n) {
               :alt="row.title"
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               loading="lazy"
-              @error="e => { e.target.style.display='none' }"
+              @error="e => { e.target.src='https://picsum.photos/seed/' + row.id + '/600/600' }"
             />
             <!-- 24h badge -->
             <span
@@ -241,7 +241,7 @@ function fmtK(n) {
           >
             <!-- Artwork info -->
             <div class="flex items-center gap-3">
-              <img :src="row.imageUrl" :alt="row.title" class="w-10 h-10 object-cover flex-shrink-0 bg-[#0d0d10]" @error="e => { e.target.style.display='none' }" />
+              <img :src="row.imageUrl" :alt="row.title" class="w-10 h-10 object-cover flex-shrink-0 bg-[#0d0d10]" @error="e => { e.target.src='https://picsum.photos/seed/' + row.id + '/80/80' }" />
               <div class="min-w-0">
                 <p class="font-display italic text-gray-100 text-[0.9rem] leading-snug truncate">{{ row.title }}</p>
                 <p class="text-[10px] tracking-[0.15em] uppercase text-gray-500 font-light">{{ row.artist }}</p>

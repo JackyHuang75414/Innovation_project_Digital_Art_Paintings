@@ -191,7 +191,7 @@ function timeAgo(ts) {
               :alt="artwork.title"
               class="w-full h-full object-contain"
               loading="eager"
-              @error="e => { if (e.target.src !== artwork.imageUrl) { e.target.src = artwork.imageUrl } else { e.target.style.display='none' } }"
+              @error="e => { const fb='https://picsum.photos/seed/'+artwork.id+'/800/800'; if(e.target.src!==fb) e.target.src=fb }"
             />
             <!-- Subtle dark vignette -->
             <div class="absolute inset-0 shadow-[inset_0_0_60px_rgba(0,0,0,0.4)] pointer-events-none" />
