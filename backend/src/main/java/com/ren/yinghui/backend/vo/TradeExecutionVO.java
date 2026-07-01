@@ -3,7 +3,6 @@ package com.ren.yinghui.backend.vo;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Data
 public class TradeExecutionVO {
@@ -13,5 +12,6 @@ public class TradeExecutionVO {
     private BigDecimal size;
     private String side;
     private String user;
-    private LocalDateTime time;
+    /** Unix epoch milliseconds — avoids LocalDateTime serialization array bug */
+    private Long time;
 }

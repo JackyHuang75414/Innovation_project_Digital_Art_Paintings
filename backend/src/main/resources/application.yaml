@@ -3,7 +3,7 @@ spring:
     name: backend
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://172.18.32.1:3306/digital_art_paintings
+    url: jdbc:mysql://localhost:3306/digital_art_paintings
     username: root
     password: 123456
 

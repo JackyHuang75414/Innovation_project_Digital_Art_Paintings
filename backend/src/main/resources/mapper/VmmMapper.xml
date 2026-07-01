@@ -28,4 +28,23 @@
         WHERE artwork_id = #{artworkId}
     </update>
 
+    <delete id="deleteVmmOrders">
+        DELETE FROM order_book_orders
+        WHERE artwork_id = #{artworkId} AND is_vmm = 1
+    </delete>
+
+    <insert id="insertVmmOrder">
+        INSERT INTO order_book_orders
+          (artwork_id, user_id, side, price, size, remaining_size, status, is_vmm)
+        VALUES
+          (#{artworkId}, NULL, #{side}, #{price}, #{size}, #{size}, 'open', 1)
+    </insert>
+
+    <insert id="insertVmmTrade">
+        INSERT INTO trade_executions
+          (artwork_id, buyer_user_id, seller_user_id, side, price, size, notional, source)
+        VALUES
+          (#{artworkId}, NULL, NULL, #{side}, #{price}, #{size}, #{price} * #{size}, 'vmm')
+    </insert>
+
 </mapper>

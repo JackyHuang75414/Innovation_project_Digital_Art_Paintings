@@ -50,6 +50,11 @@
             <artifactId>spring-boot-starter-webmvc-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <!--Jackson依赖-->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
         <!--mybatis依赖-->
         <dependency>
             <groupId>org.mybatis.spring.boot</groupId>
@@ -82,7 +87,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <fork>true</fork>
-                    <executable>/usr/bin/javac</executable>
+                    <executable>C:\Program Files\Java\jdk-17.0.2\bin\javac.exe</executable>
                 </configuration>
             </plugin>
             <plugin>

@@ -6,6 +6,26 @@ USE digital_art_paintings;
 
 -- ── Core tables ───────────────────────────────────────────────────────────────
 
+CREATE TABLE IF NOT EXISTS artwork_markets (
+    artwork_id           BIGINT PRIMARY KEY,
+    current_share_price  DECIMAL(16,6) DEFAULT 1.0,
+    initial_share_price  DECIMAL(16,6) DEFAULT 1.0,
+    total_shares         BIGINT        DEFAULT 1000000,
+    market_cap           DECIMAL(16,2) DEFAULT 0,
+    volume_24h           DECIMAL(16,2) DEFAULT 0,
+    change_24h_pct       DECIMAL(8,2)  DEFAULT 0,
+    is_tradable          TINYINT(1)    DEFAULT 1,
+    FOREIGN KEY (artwork_id) REFERENCES artworks(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS artwork_price_history (
+    id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+    artwork_id  BIGINT NOT NULL,
+    price       DECIMAL(16,6) NOT NULL,
+    recorded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (artwork_id) REFERENCES artworks(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS artists (
     id          BIGINT AUTO_INCREMENT PRIMARY KEY,
     name        VARCHAR(100) NOT NULL,
@@ -226,3 +246,7 @@ INSERT IGNORE INTO artwork_recommendations (artwork_id, recommended_artwork_id, 
 SELECT 'Database setup complete.' AS status;
 SELECT COUNT(*) AS artwork_count FROM artworks;
 SELECT COUNT(*) AS artist_count FROM artists;
+
+-- Seed artwork_markets with initial prices
+INSERT IGNORE INTO artwork_markets (artwork_id, current_share_price, is_tradable) VALUES
+    (1, 6.90, 1), (2, 2.80, 1), (3, 1.92, 1), (4, 3.20, 1), (5, 1.40, 1), (6, 0.88, 1);

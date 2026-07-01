@@ -94,7 +94,7 @@
               WHEN seller_user_id IS NOT NULL THEN CONCAT('User_', seller_user_id)
               ELSE 'VMM'
             END AS user,
-            executed_at AS time
+            UNIX_TIMESTAMP(executed_at) * 1000 AS time
         FROM trade_executions
         WHERE artwork_id = #{artworkId}
         ORDER BY executed_at DESC, id DESC

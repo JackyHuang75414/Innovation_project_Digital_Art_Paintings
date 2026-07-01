@@ -33,6 +33,9 @@ public class VmmService {
     private static final double SIGMA          = 8e-3;
     private static final int    MAX_MEMORY_HISTORY = 200;   // in-memory ring buffer
     private static final int    HISTORY_INTERVAL   = 15;    // write DB history every 15 ticks (30 s)
+    private static final int    ORDER_BOOK_LEVELS  = 6;     // bid/ask levels per side
+    // Spread tiers away from mid-price (0.15 %, 0.35 %, 0.60 %, 0.95 %, 1.40 %, 2.00 %)
+    private static final double[] SPREAD = { 0.0015, 0.0035, 0.006, 0.0095, 0.014, 0.020 };
 
     private final VmmMapper    vmmMapper;
     private final ObjectMapper mapper = new ObjectMapper();
@@ -97,6 +100,26 @@ public class VmmService {
 
             // DB: update live price
             try { vmmMapper.updateCurrentPrice(id, newP); } catch (Exception ignored) {}
+
+            // DB: refresh VMM order book around new mid-price
+            try {
+                vmmMapper.deleteVmmOrders(id);
+                for (int lvl = 0; lvl < ORDER_BOOK_LEVELS; lvl++) {
+                    double s    = SPREAD[lvl];
+                    double size = 500 + rng.nextDouble() * 1500;
+                    vmmMapper.insertVmmOrder(id, "ask", newP * (1 + s), size);
+                    vmmMapper.insertVmmOrder(id, "bid", newP * (1 - s), size);
+                }
+            } catch (Exception ignored) {}
+
+            // DB: simulated VMM trade (every ~8 ticks = 16 s on average)
+            if (rng.nextInt(8) == 0) {
+                try {
+                    String side  = rng.nextBoolean() ? "buy" : "sell";
+                    double tSize = 50 + rng.nextDouble() * 300;
+                    vmmMapper.insertVmmTrade(id, side, newP, tSize);
+                } catch (Exception ignored) {}
+            }
 
             // DB: price history (throttled)
             if (writeHistory) {
