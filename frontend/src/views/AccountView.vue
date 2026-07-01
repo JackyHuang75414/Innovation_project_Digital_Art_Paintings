@@ -328,7 +328,7 @@ function timeAgo(ts) {
       <div v-if="wishlist.items.length === 0" class="py-20 text-center">
         <p class="font-display italic text-gray-600 text-2xl mb-2">No saved works yet</p>
         <p class="text-gray-700 text-sm font-light mb-6">Save artworks from Discover or artwork detail pages.</p>
-        <RouterLink to="/browse" class="btn-primary text-sm px-6 py-2.5">Discover Works</RouterLink>
+        <RouterLink to="/market" class="btn-primary text-sm px-6 py-2.5">Discover Works</RouterLink>
       </div>
 
       <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">

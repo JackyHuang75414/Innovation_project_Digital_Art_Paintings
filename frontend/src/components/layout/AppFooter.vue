@@ -18,7 +18,7 @@
         <p class="text-[10px] tracking-[0.3em] uppercase text-gray-500 font-light mb-5">Trade</p>
         <ul class="space-y-3 text-sm font-light">
           <li><a href="/market"    class="hover:text-white transition-colors">Market</a></li>
-          <li><a href="/browse"    class="hover:text-white transition-colors">Discover Works</a></li>
+          <li><a href="/market"    class="hover:text-white transition-colors">Discover Works</a></li>
           <li><a href="/account"   class="hover:text-white transition-colors">Portfolio</a></li>
           <li><a href="/checkout"  class="hover:text-white transition-colors">Checkout</a></li>
         </ul>

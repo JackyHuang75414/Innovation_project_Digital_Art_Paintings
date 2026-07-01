@@ -204,7 +204,7 @@ async function setMethod(m) {
 
 // ── Lifecycle ─────────────────────────────────────────────────────────────────
 onMounted(async () => {
-  if (cart.items.length === 0) { router.replace('/browse'); return }
+  if (cart.items.length === 0) { router.replace('/market'); return }
   await nextTick()
   await initStripe()
   stripeLoading.value = false

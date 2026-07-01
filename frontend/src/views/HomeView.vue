@@ -62,7 +62,7 @@ function fmtK(n) {
       </p>
       <div class="flex items-center gap-4 flex-wrap">
         <RouterLink to="/market" class="btn-primary">Enter Market</RouterLink>
-        <RouterLink to="/browse" class="btn-outline">Discover Art</RouterLink>
+        <RouterLink to="/market" class="btn-outline">Discover Art</RouterLink>
       </div>
     </div>
 
@@ -152,7 +152,7 @@ function fmtK(n) {
           <p class="text-[10px] tracking-[0.35em] uppercase text-[#E8552A] mb-2 font-light">Featured</p>
           <h2 class="font-display text-2xl font-normal italic text-white">Selected Works</h2>
         </div>
-        <RouterLink to="/browse" class="text-[11px] tracking-[0.15em] uppercase text-gray-500 hover:text-white transition-colors">All Works →</RouterLink>
+        <RouterLink to="/market" class="text-[11px] tracking-[0.15em] uppercase text-gray-500 hover:text-white transition-colors">All Works →</RouterLink>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-5">

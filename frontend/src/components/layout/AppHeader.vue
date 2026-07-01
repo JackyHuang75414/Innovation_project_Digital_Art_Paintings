@@ -71,9 +71,9 @@ function selectFiat(code)  { prices.setFiat(code); showCurrencyMenu.value = fals
           Market
         </RouterLink>
         <RouterLink
-          to="/browse"
+          to="/market"
           class="text-[11px] tracking-[0.18em] uppercase transition-colors duration-150 font-light"
-          :class="$route.path === '/browse' ? 'text-white' : 'text-gray-400 hover:text-white'"
+          :class="$route.path === '/market' ? 'text-white' : 'text-gray-400 hover:text-white'"
         >
           Discover
         </RouterLink>

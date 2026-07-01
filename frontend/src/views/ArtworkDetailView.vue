@@ -63,7 +63,7 @@ async function toggleWishlist() {
       <nav class="flex items-center gap-2 text-[10px] tracking-[0.2em] uppercase text-gray-400 font-light">
         <RouterLink to="/" class="hover:text-gray-700 transition-colors">Home</RouterLink>
         <span class="text-gray-300">/</span>
-        <RouterLink to="/browse" class="hover:text-gray-700 transition-colors">Browse</RouterLink>
+        <RouterLink to="/market" class="hover:text-gray-700 transition-colors">Market</RouterLink>
         <span class="text-gray-300">/</span>
         <span class="text-gray-600">{{ artwork.title }}</span>
       </nav>

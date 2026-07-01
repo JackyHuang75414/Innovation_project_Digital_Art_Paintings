@@ -26,7 +26,7 @@ const cart = useCartStore()
       </svg>
       <p class="font-display italic text-2xl text-gray-400 mb-2">Your cart is empty</p>
       <p class="text-sm text-gray-400 font-light mb-10">Discover works that speak to you.</p>
-      <RouterLink to="/browse" class="btn-primary">Discover Artworks</RouterLink>
+      <RouterLink to="/market" class="btn-primary">Discover Artworks</RouterLink>
     </div>
 
     <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16">
@@ -92,7 +92,7 @@ const cart = useCartStore()
 
           <RouterLink to="/checkout" class="btn-primary block text-center">Proceed to Checkout</RouterLink>
           <RouterLink
-            to="/browse"
+            to="/market"
             class="block text-center text-[11px] tracking-[0.15em] uppercase text-gray-400 hover:text-gray-700 mt-5 transition-colors font-light"
           >
             Continue Shopping
