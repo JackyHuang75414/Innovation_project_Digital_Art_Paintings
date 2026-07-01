@@ -10,7 +10,6 @@ import jakarta.validation.constraints.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,9 +26,9 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public Result register(@RequestParam @Pattern(regexp = "^\\S{3,16}$") String name,
-                           @RequestParam @Email String email,
-                           @RequestParam @Pattern(regexp = "^\\S{5,16}$") String password) {
+    public Result register(@Pattern(regexp = "^\\S{3,16}$") String name,
+                           @Email String email,
+                           @Pattern(regexp = "^\\S{5,16}$") String password) {
         //get user by name
         User user = userService.findByName(name);
         if (user != null) {
@@ -49,8 +48,8 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public Result login(@RequestParam @Pattern(regexp = "^\\S{3,16}$") String name,
-                        @RequestParam @Pattern(regexp = "^\\S{5,16}$") String password) {
+    public Result login(@Pattern(regexp = "^\\S{3,16}$") String name,
+                        @Pattern(regexp = "^\\S{5,16}$") String password) {
         User user = userService.findByName(name);
         //if user doesn't exist
         if(user == null){
