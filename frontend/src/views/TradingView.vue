@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useTradingStore, TOTAL_SHARES, MAINTENANCE_RATE } from '@/stores/trading'
 import { usePricesStore } from '@/stores/prices'
 import { useWalletStore } from '@/stores/wallet'
@@ -10,6 +10,7 @@ import LoginModal from '@/components/ui/LoginModal.vue'
 import CryptoPriceBadge from '@/components/ui/CryptoPriceBadge.vue'
 
 const route  = useRoute()
+const router = useRouter()
 const store  = useTradingStore()
 const prices = usePricesStore()
 const wallet = useWalletStore()
@@ -478,44 +479,77 @@ function timeAgo(ts) {
         <div class="border-t border-white/[0.06] px-4 py-3 mt-auto">
           <div class="flex items-center justify-between mb-3">
             <p class="text-[10px] uppercase text-gray-600 tracking-[0.2em]">AI Trading Agent</p>
-            <button
-              class="relative w-10 h-5 rounded-full transition-colors"
-              :class="agentDraft.enabled ? 'bg-[#E8552A]' : 'bg-white/10'"
-              @click="agentDraft.enabled = !agentDraft.enabled">
-              <span class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform"
-                :class="agentDraft.enabled ? 'translate-x-5' : 'translate-x-0'" />
-            </button>
-          </div>
-          <div class="space-y-2" :class="!agentDraft.enabled ? 'opacity-40 pointer-events-none' : ''">
-            <select v-model="agentDraft.strategy"
-              class="w-full bg-[#111116] border border-white/[0.1] text-gray-300 px-2 py-1.5 text-xs outline-none">
-              <option value="momentum">Momentum</option>
-              <option value="mean_reversion">Mean Reversion</option>
-              <option value="grid">Grid</option>
-              <option value="custom">Custom AI (API)</option>
-            </select>
-            <template v-if="agentDraft.strategy === 'custom'">
-              <input v-model="agentDraft.customEndpoint" type="url" placeholder="https://your-ai-endpoint.com/trade"
-                class="w-full bg-[#111116] border border-white/[0.1] text-gray-300 px-2 py-1.5 text-xs outline-none placeholder:text-gray-700" />
-              <input v-model="agentDraft.customKey" type="password" placeholder="API key (optional)"
-                class="w-full bg-[#111116] border border-white/[0.1] text-gray-300 px-2 py-1.5 text-xs outline-none placeholder:text-gray-700" />
+            <template v-if="auth.isPaid">
+              <button
+                class="relative w-10 h-5 rounded-full transition-colors"
+                :class="agentDraft.enabled ? 'bg-[#E8552A]' : 'bg-white/10'"
+                @click="agentDraft.enabled = !agentDraft.enabled">
+                <span class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform"
+                  :class="agentDraft.enabled ? 'translate-x-5' : 'translate-x-0'" />
+              </button>
             </template>
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <label class="text-[10px] uppercase text-gray-700 block mb-1">Max USD</label>
-                <input v-model="agentDraft.maxUsd" type="number" min="10" placeholder="500"
-                  class="w-full bg-[#111116] border border-white/[0.1] text-gray-300 px-2 py-1.5 text-xs font-mono outline-none" />
+            <span v-else class="text-[9px] tracking-[0.15em] uppercase text-[#E8552A] border border-[#E8552A]/40 px-2 py-0.5 rounded-sm">Pro</span>
+          </div>
+
+          <!-- Paid: full agent config -->
+          <template v-if="auth.isPaid">
+            <div class="space-y-2" :class="!agentDraft.enabled ? 'opacity-40 pointer-events-none' : ''">
+              <select v-model="agentDraft.strategy"
+                class="w-full bg-[#111116] border border-white/[0.1] text-gray-300 px-2 py-1.5 text-xs outline-none">
+                <option value="momentum">Momentum (ArtEx AI)</option>
+                <option value="mean_reversion">Mean Reversion (ArtEx AI)</option>
+                <option value="grid">Grid (ArtEx AI)</option>
+                <option value="custom">Custom Endpoint</option>
+              </select>
+              <template v-if="agentDraft.strategy === 'custom'">
+                <input v-model="agentDraft.customEndpoint" type="url" placeholder="https://your-ai-endpoint.com/trade"
+                  class="w-full bg-[#111116] border border-white/[0.1] text-gray-300 px-2 py-1.5 text-xs outline-none placeholder:text-gray-700" />
+                <input v-model="agentDraft.customKey" type="password" placeholder="API key (optional)"
+                  class="w-full bg-[#111116] border border-white/[0.1] text-gray-300 px-2 py-1.5 text-xs outline-none placeholder:text-gray-700" />
+              </template>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="text-[10px] uppercase text-gray-700 block mb-1">Max USD</label>
+                  <input v-model="agentDraft.maxUsd" type="number" min="10" placeholder="500"
+                    class="w-full bg-[#111116] border border-white/[0.1] text-gray-300 px-2 py-1.5 text-xs font-mono outline-none" />
+                </div>
+                <div>
+                  <label class="text-[10px] uppercase text-gray-700 block mb-1">Interval (s)</label>
+                  <input v-model="agentDraft.intervalSec" type="number" min="5" placeholder="30"
+                    class="w-full bg-[#111116] border border-white/[0.1] text-gray-300 px-2 py-1.5 text-xs font-mono outline-none" />
+                </div>
               </div>
-              <div>
-                <label class="text-[10px] uppercase text-gray-700 block mb-1">Interval (s)</label>
-                <input v-model="agentDraft.intervalSec" type="number" min="5" placeholder="30"
-                  class="w-full bg-[#111116] border border-white/[0.1] text-gray-300 px-2 py-1.5 text-xs font-mono outline-none" />
+              <button class="w-full py-2 bg-[#E8552A] hover:bg-[#d4461c] text-white text-[10px] uppercase tracking-[0.2em] transition-colors" @click="saveAgent">
+                {{ agentDraft.enabled ? 'Activate Agent' : 'Save' }}
+              </button>
+            </div>
+          </template>
+
+          <!-- Free: locked paywall -->
+          <template v-else>
+            <div class="relative">
+              <!-- Blurred preview -->
+              <div class="space-y-2 opacity-30 pointer-events-none select-none blur-[1px]">
+                <div class="w-full bg-[#111116] border border-white/[0.1] text-gray-500 px-2 py-1.5 text-xs">Momentum (ArtEx AI)</div>
+                <div class="grid grid-cols-2 gap-2">
+                  <div class="bg-[#111116] border border-white/[0.1] px-2 py-1.5 text-[10px] text-gray-600 font-mono">$500</div>
+                  <div class="bg-[#111116] border border-white/[0.1] px-2 py-1.5 text-[10px] text-gray-600 font-mono">30s</div>
+                </div>
+                <div class="w-full py-2 bg-white/10 text-gray-600 text-[10px] uppercase text-center">Activate Agent</div>
+              </div>
+              <!-- Paywall overlay -->
+              <div class="absolute inset-0 flex flex-col items-center justify-center bg-[#09090c]/70 rounded-sm">
+                <svg class="w-5 h-5 text-gray-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/>
+                </svg>
+                <p class="text-[10px] text-gray-400 mb-2.5 text-center leading-snug">AI Trading Agent<br>requires Pro</p>
+                <button
+                  class="px-3 py-1.5 bg-[#E8552A] hover:bg-[#d4461c] text-white text-[10px] uppercase tracking-[0.2em] transition-colors rounded-sm"
+                  @click="router.push('/subscription')"
+                >Upgrade to Pro</button>
               </div>
             </div>
-            <button class="w-full py-2 bg-[#E8552A] hover:bg-[#d4461c] text-white text-[10px] uppercase tracking-[0.2em] transition-colors" @click="saveAgent">
-              {{ agentDraft.enabled ? 'Activate Agent' : 'Save' }}
-            </button>
-          </div>
+          </template>
         </div>
       </div>
     </div>

@@ -7,6 +7,22 @@ export const confirmDemoPayment = payload => http.post('/payments/demo/confirm',
 export const createBitcoinPayment = payload => http.post('/payments/bitcoin/address', payload)
 export const getBitcoinPayment = paymentId => http.get(`/payments/bitcoin/${paymentId}`)
 
+/** Generate a testnet BTC address for checkout (proxied via /blockcypher) */
+export async function generateBtcAddress() {
+  const res = await fetch('/blockcypher/v1/btc/test3/addrs', { method: 'POST' })
+  if (!res.ok) throw new Error('BlockCypher address generation failed')
+  const data = await res.json()
+  return data.address
+}
+
+/** Poll BlockCypher for received BTC at an address */
+export async function getBtcReceived(address) {
+  const res = await fetch(`/blockcypher/v1/btc/test3/addrs/${address}/balance`)
+  if (!res.ok) return 0
+  const data = await res.json()
+  return (data.total_received ?? 0) / 1e8  // satoshis → BTC
+}
+
 /**
  * Luhn algorithm — validates a stripped card number string.
  */

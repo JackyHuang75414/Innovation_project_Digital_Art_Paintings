@@ -206,7 +206,19 @@ function timeAgo(ts) {
             :style="{ backgroundColor: auth.color + '22', color: auth.color, border: `1px solid ${auth.color}44` }"
           >{{ auth.initials || '?' }}</span>
           <div>
-            <p class="text-white font-medium">{{ auth.displayName || 'Guest' }}</p>
+            <div class="flex items-center gap-2">
+              <p class="text-white font-medium">{{ auth.displayName || 'Guest' }}</p>
+              <span
+                v-if="auth.isPaid"
+                class="text-[9px] tracking-[0.2em] uppercase px-2 py-0.5 rounded-sm font-medium"
+                style="background: rgba(232,85,42,0.15); color: #E8552A; border: 1px solid rgba(232,85,42,0.3)"
+              >Pro</span>
+              <RouterLink
+                v-else
+                to="/subscription"
+                class="text-[9px] tracking-[0.15em] uppercase px-2 py-0.5 rounded-sm border border-white/[0.1] text-gray-600 hover:text-gray-400 hover:border-white/20 transition-colors"
+              >Upgrade</RouterLink>
+            </div>
             <p class="text-gray-600 text-[11px] font-light">{{ auth.user?.bio ?? 'Not logged in' }}</p>
           </div>
         </div>
@@ -229,11 +241,11 @@ function timeAgo(ts) {
     <div class="flex gap-0 border-b border-white/[0.07] mb-6 overflow-x-auto">
       <button
         v-for="tab in [
-          { id: 'holdings',  label: 'Holdings',   badge: holdings.length },
-          { id: 'wishlist',  label: 'Wishlist',   badge: wishlist.items.length },
-          { id: 'positions', label: 'Positions',  badge: positions.length },
-          { id: 'orders',    label: 'TP / SL',    badge: store.wallet.tpslOrders.length },
-          { id: 'monitor',   label: '🦞 AI Monitor' },
+          { id: 'holdings',  label: 'Holdings',      badge: holdings.length },
+          { id: 'wishlist',  label: 'Wishlist',      badge: wishlist.items.length },
+          { id: 'positions', label: 'Positions',     badge: positions.length },
+          { id: 'orders',    label: 'TP / SL',       badge: store.wallet.tpslOrders.length },
+          { id: 'monitor',   label: '🦞 AI Monitor', locked: !auth.isPaid },
           { id: 'settings',  label: 'Settings' },
         ]"
         :key="tab.id"
@@ -245,6 +257,9 @@ function timeAgo(ts) {
       >
         {{ tab.label }}
         <span v-if="tab.badge" class="text-[9px] bg-white/10 text-gray-400 px-1.5 py-0.5 rounded-sm">{{ tab.badge }}</span>
+        <svg v-if="tab.locked" class="w-3 h-3 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/>
+        </svg>
       </button>
     </div>
 
@@ -468,7 +483,55 @@ function timeAgo(ts) {
 
     <!-- ══════════════ AI MONITOR (小龍蝦) ══════════════ -->
     <div v-else-if="activeTab === 'monitor'">
-      <div class="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
+
+      <!-- Free user paywall -->
+      <div v-if="!auth.isPaid" class="py-16 flex flex-col items-center text-center max-w-md mx-auto">
+        <div class="w-14 h-14 rounded-full bg-[#E8552A]/10 border border-[#E8552A]/20 flex items-center justify-center mb-5">
+          <svg class="w-6 h-6 text-[#E8552A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/>
+          </svg>
+        </div>
+        <p class="text-white font-medium text-lg mb-2">🦞 AI Monitor</p>
+        <p class="text-gray-500 text-sm font-light leading-relaxed mb-2">
+          Connect any AI API to monitor and automatically trade your portfolio in real-time.
+          Set price thresholds, define strategies, and let the agent execute — while you focus on the art.
+        </p>
+        <p class="text-gray-600 text-[11px] mb-6">Available on <span class="text-[#E8552A]">Pro</span> and <span class="text-[#9945ff]">Institutional</span> plans.</p>
+        <div class="flex gap-3">
+          <button
+            class="px-5 py-2.5 bg-[#E8552A] hover:bg-[#d4461c] text-white text-[11px] tracking-[0.2em] uppercase transition-colors"
+            @click="router.push('/subscription')"
+          >View Plans</button>
+          <button
+            class="px-5 py-2.5 bg-white/[0.05] border border-white/[0.1] text-gray-400 hover:text-white text-[11px] tracking-[0.2em] uppercase transition-colors"
+            @click="router.push('/market')"
+          >Continue Trading</button>
+        </div>
+
+        <!-- Feature preview (greyed out) -->
+        <div class="mt-10 w-full relative">
+          <div class="blur-sm opacity-25 pointer-events-none">
+            <div class="card-dark p-4 text-left space-y-3">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-white text-sm">AI Account Monitor</p>
+                  <p class="text-gray-600 text-[10px]">Connect any AI API to monitor and trade</p>
+                </div>
+                <div class="w-11 h-6 bg-[#E8552A] rounded-full"></div>
+              </div>
+              <div class="bg-[#0d0d10] border border-white/10 px-3 py-2 text-[11px] text-gray-600 font-mono">https://api.deepseek.com/v1/chat/completions</div>
+              <div class="bg-[#0d0d10] border border-white/10 px-3 py-2 text-[11px] text-gray-700">••••••••••••••••</div>
+              <div class="w-full py-2.5 bg-[#E8552A] text-[10px] uppercase text-center text-white">Activate Monitor</div>
+            </div>
+          </div>
+          <div class="absolute inset-0 flex items-center justify-center">
+            <span class="text-[10px] tracking-[0.2em] uppercase text-gray-600 bg-[#09090c] px-3 py-1.5 border border-white/[0.08]">Pro Feature</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paid user: full config -->
+      <div v-else class="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
 
         <!-- Config -->
         <div class="card-dark p-5 space-y-4">
@@ -602,7 +665,7 @@ function timeAgo(ts) {
             </div>
           </div>
         </div>
-      </div>
+      </div><!-- end v-else paid -->
     </div>
 
     <!-- ══════════════ SETTINGS ══════════════ -->

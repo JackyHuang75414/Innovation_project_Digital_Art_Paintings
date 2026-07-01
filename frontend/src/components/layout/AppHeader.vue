@@ -84,6 +84,14 @@ function selectFiat(code)  { prices.setFiat(code); showCurrencyMenu.value = fals
         >
           Portfolio
         </RouterLink>
+        <RouterLink
+          to="/subscription"
+          class="flex items-center gap-1.5 text-[11px] tracking-[0.18em] uppercase transition-colors duration-150 font-light"
+          :class="$route.path === '/subscription' ? 'text-[#E8552A]' : 'text-gray-400 hover:text-white'"
+        >
+          <span v-if="auth.isLoggedIn && !auth.isPaid" class="w-1.5 h-1.5 rounded-full bg-[#E8552A] flex-shrink-0" />
+          Pricing
+        </RouterLink>
       </nav>
 
       <!-- Right: currency selector + icons -->
