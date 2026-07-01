@@ -56,6 +56,7 @@ async function toggleWishlist() {
 </script>
 
 <template>
+<div class="bg-white text-gray-900">
   <!-- Breadcrumb -->
   <div class="bg-[#F7F4F0] border-b border-[#E0D8CE]">
     <div class="max-w-screen-xl mx-auto px-6 lg:px-16 py-3.5">
@@ -233,4 +234,5 @@ async function toggleWishlist() {
       </div>
     </section>
   </div>
+</div>
 </template>
