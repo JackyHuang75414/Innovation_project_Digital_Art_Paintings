@@ -4,11 +4,14 @@
 
 USE digital_art_paintings;
 
+-- Disable safe-update mode so DELETE without PK in WHERE works
+SET SQL_SAFE_UPDATES = 0;
+
 -- ────────────────────────────────────────────────────────────
 -- 1. CLEAR existing VMM orders (if any)
 -- ────────────────────────────────────────────────────────────
 DELETE FROM order_book_orders WHERE is_vmm = 1;
--- Remove any stale real trades for a clean demo
+-- Remove any stale VMM trades for a clean demo
 DELETE FROM trade_executions WHERE source = 'vmm';
 
 -- ────────────────────────────────────────────────────────────
@@ -95,7 +98,10 @@ UPDATE artworks SET
   image_large_url = 'https://upload.wikimedia.org/wikipedia/commons/a/a8/A_Coin_for_the_Ferryman.gif'
 WHERE id = 3;
 
--- Verify
+-- Restore safe-update mode
+SET SQL_SAFE_UPDATES = 1;
+
+-- Verify — expected: order_book_orders=72, trade_executions=90, artwork_markets=6
 SELECT 'order_book_orders' AS tbl, COUNT(*) AS rows FROM order_book_orders
 UNION ALL
 SELECT 'trade_executions', COUNT(*) FROM trade_executions
