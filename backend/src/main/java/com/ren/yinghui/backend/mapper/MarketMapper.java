@@ -31,6 +31,22 @@ public interface MarketMapper {
 
     BigDecimal findCurrentPrice(Long artworkId);
 
+    List<VmmMarketRow> findTradableMarketRows();
+
+    int updateMarketPrice(@Param("artworkId") Long artworkId, @Param("currentPrice") BigDecimal currentPrice,
+                          @Param("change24hPct") BigDecimal change24hPct, @Param("volumeDelta") BigDecimal volumeDelta);
+
+    int insertPriceHistory(@Param("artworkId") Long artworkId, @Param("price") BigDecimal price);
+
+    int deleteOldPriceHistory(@Param("artworkId") Long artworkId, @Param("keepRows") Integer keepRows);
+
+    int deleteOpenVmmOrders(Long artworkId);
+
+    int insertVmmOrder(@Param("artworkId") Long artworkId, @Param("side") String side,
+                       @Param("price") BigDecimal price, @Param("size") BigDecimal size);
+
+    int deleteOldVmmTrades(@Param("artworkId") Long artworkId, @Param("keepRows") Integer keepRows);
+
     int updateUsdBalance(@Param("userId") Long userId, @Param("delta") BigDecimal delta);
 
     int updateBtcBalance(@Param("userId") Long userId, @Param("delta") BigDecimal delta);
@@ -64,5 +80,11 @@ public interface MarketMapper {
     class PortfolioShareRow {
         public Long artworkId;
         public BigDecimal quantity;
+    }
+
+    class VmmMarketRow {
+        public Long artworkId;
+        public BigDecimal initialSharePrice;
+        public BigDecimal currentSharePrice;
     }
 }

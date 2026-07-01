@@ -162,6 +162,75 @@
           AND is_tradable = 1
     </select>
 
+    <select id="findTradableMarketRows" resultType="com.ren.yinghui.backend.mapper.MarketMapper$VmmMarketRow">
+        SELECT
+            artwork_id,
+            initial_share_price,
+            current_share_price
+        FROM artwork_markets
+        WHERE is_tradable = 1
+        ORDER BY artwork_id ASC
+    </select>
+
+    <update id="updateMarketPrice">
+        UPDATE artwork_markets
+        SET current_share_price = #{currentPrice},
+            change_24h_pct = #{change24hPct},
+            volume_24h = volume_24h + #{volumeDelta}
+        WHERE artwork_id = #{artworkId}
+          AND is_tradable = 1
+    </update>
+
+    <insert id="insertPriceHistory">
+        INSERT INTO artwork_price_history (artwork_id, price)
+        VALUES (#{artworkId}, #{price})
+    </insert>
+
+    <delete id="deleteOldPriceHistory">
+        DELETE FROM artwork_price_history
+        WHERE artwork_id = #{artworkId}
+          AND id NOT IN (
+            SELECT id FROM (
+                SELECT id
+                FROM artwork_price_history
+                WHERE artwork_id = #{artworkId}
+                ORDER BY recorded_at DESC, id DESC
+                LIMIT #{keepRows}
+            ) recent_history
+          )
+    </delete>
+
+    <delete id="deleteOpenVmmOrders">
+        DELETE FROM order_book_orders
+        WHERE artwork_id = #{artworkId}
+          AND is_vmm = 1
+          AND status IN ('open', 'partially_filled')
+    </delete>
+
+    <insert id="insertVmmOrder">
+        INSERT INTO order_book_orders (
+            artwork_id, user_id, side, order_type, price, size, remaining_size, status, is_vmm
+        ) VALUES (
+            #{artworkId}, NULL, #{side}, 'vmm', #{price}, #{size}, #{size}, 'open', 1
+        )
+    </insert>
+
+    <delete id="deleteOldVmmTrades">
+        DELETE FROM trade_executions
+        WHERE artwork_id = #{artworkId}
+          AND source = 'vmm'
+          AND id NOT IN (
+            SELECT id FROM (
+                SELECT id
+                FROM trade_executions
+                WHERE artwork_id = #{artworkId}
+                  AND source = 'vmm'
+                ORDER BY executed_at DESC, id DESC
+                LIMIT #{keepRows}
+            ) recent_vmm_trades
+          )
+    </delete>
+
     <select id="findHoldingQuantity" resultType="java.math.BigDecimal">
         SELECT COALESCE(quantity, 0)
         FROM portfolio_share_holdings

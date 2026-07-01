@@ -52,18 +52,22 @@ export const useTradingStore = defineStore('trading', () => {
   })
 
   const loaded = ref(false)
+  let marketTimer = null
+  let marketRefreshing = false
 
   async function init() {
     if (loaded.value) {
       await loadWallet()
+      startMarketPolling()
       return
     }
     await loadMarket()
     await loadWallet()
+    startMarketPolling()
   }
 
   function destroy() {
-    // Backend-backed store does not run local market simulation timers.
+    stopMarketPolling()
   }
 
   async function loadMarket() {
@@ -89,6 +93,28 @@ export const useTradingStore = defineStore('trading', () => {
       }))
     }))
     loaded.value = true
+  }
+
+  function startMarketPolling() {
+    if (marketTimer) return
+    marketTimer = setInterval(refreshMarketFromBackend, 2000)
+  }
+
+  function stopMarketPolling() {
+    clearInterval(marketTimer)
+    marketTimer = null
+  }
+
+  async function refreshMarketFromBackend() {
+    if (marketRefreshing || !loaded.value) return
+    marketRefreshing = true
+    try {
+      await loadMarket()
+    } catch {
+      // Keep the last market snapshot if a polling request fails.
+    } finally {
+      marketRefreshing = false
+    }
   }
 
   async function loadWallet() {

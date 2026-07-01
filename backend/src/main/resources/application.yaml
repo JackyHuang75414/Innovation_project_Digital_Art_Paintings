@@ -22,4 +22,4 @@ ai:
   deepseek:
     chat-url: https://api.deepseek.com/v1/chat/completions
     model: deepseek-chat
-    api-key: ${LLM_API_KEY:${DEEPSEEK_API_KEY:}}
+    api-key: sk-5691d742ce324a2dbc4584b8c8a5578d
