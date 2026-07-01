@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ren.yinghui.backend.mapper.VmmMapper">
+
+    <select id="findTradableArtworkPrices" resultType="map">
+        SELECT artwork_id AS artworkId, current_share_price AS price
+        FROM artwork_markets
+        WHERE is_tradable = 1
+    </select>
+
+    <update id="updateCurrentPrice">
+        UPDATE artwork_markets
+        SET current_share_price = #{price},
+            volume_24h = volume_24h + #{price} * 100
+        WHERE artwork_id = #{artworkId}
+    </update>
+
+    <insert id="insertPriceHistory">
+        INSERT INTO artwork_price_history (artwork_id, price)
+        VALUES (#{artworkId}, #{price})
+    </insert>
+
+    <update id="updateChange24h">
+        UPDATE artwork_markets
+        SET change_24h_pct = #{changePct}
+        WHERE artwork_id = #{artworkId}
+    </update>
+
+</mapper>

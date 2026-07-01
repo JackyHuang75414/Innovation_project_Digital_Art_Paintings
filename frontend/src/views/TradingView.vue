@@ -4,13 +4,16 @@ import { useRoute } from 'vue-router'
 import { useTradingStore, TOTAL_SHARES, MAINTENANCE_RATE } from '@/stores/trading'
 import { usePricesStore } from '@/stores/prices'
 import { useWalletStore } from '@/stores/wallet'
+import { useAuthStore } from '@/stores/auth'
 import WalletConnectModal from '@/components/ui/WalletConnectModal.vue'
+import LoginModal from '@/components/ui/LoginModal.vue'
 import CryptoPriceBadge from '@/components/ui/CryptoPriceBadge.vue'
 
 const route  = useRoute()
 const store  = useTradingStore()
 const prices = usePricesStore()
 const wallet = useWalletStore()
+const auth   = useAuthStore()
 
 onMounted(store.init)
 onUnmounted(store.destroy)
@@ -33,6 +36,7 @@ const leverage    = ref(10)
 const marginBtc   = ref('')
 const tradeMsg    = ref(null)
 const showWalletModal = ref(false)
+const showLoginModal = ref(false)
 
 const sharesHeld  = computed(() => store.wallet.shares[artworkId.value] || 0)
 const usdBalance  = computed(() => store.wallet.usd)
@@ -56,35 +60,58 @@ const perpLiqPrice = computed(() => {
 })
 
 function requireWallet() {
-  if (!wallet.isConnected) { showWalletModal.value = true; return false }
+  if (!wallet.isConnected) {
+    openWallet()
+    return false
+  }
   return true
 }
 
-function executeSpot() {
+function openWallet() {
+  if (!auth.isLoggedIn) {
+    showLoginModal.value = true
+    return
+  }
+  showWalletModal.value = true
+}
+
+async function executeSpot() {
   if (!requireWallet()) return
   const amt = parseFloat(spotAmount.value)
   if (!amt || amt <= 0) return
-  let result = tradeSide.value === 'buy'
-    ? store.buyShares(artworkId.value, amt)
-    : store.sellShares(artworkId.value, amt)
-  tradeMsg.value = { ok: result.ok, text: result.ok ? `Filled @ $${(result.price ?? price.value).toFixed(4)}` : result.msg }
-  if (result.ok) spotAmount.value = ''
+  try {
+    let result = tradeSide.value === 'buy'
+      ? await store.buyShares(artworkId.value, amt)
+      : await store.sellShares(artworkId.value, amt)
+    tradeMsg.value = { ok: result.ok, text: result.ok ? `Filled @ $${(result.price ?? price.value).toFixed(4)}` : result.msg }
+    if (result.ok) spotAmount.value = ''
+  } catch (err) {
+    tradeMsg.value = { ok: false, text: err.message || 'Trade failed' }
+  }
   setTimeout(() => { tradeMsg.value = null }, 3000)
 }
 
-function executePerp() {
+async function executePerp() {
   if (!requireWallet()) return
   const btc = parseFloat(marginBtc.value)
   if (!btc || btc <= 0) return
-  const result = store.openPerp(artworkId.value, perpSide.value, leverage.value, btc)
-  tradeMsg.value = { ok: result.ok, text: result.ok ? `${perpSide.value.toUpperCase()} opened @ $${price.value.toFixed(4)}` : result.msg }
-  if (result.ok) marginBtc.value = ''
+  try {
+    const result = await store.openPerp(artworkId.value, perpSide.value, leverage.value, btc)
+    tradeMsg.value = { ok: result.ok, text: result.ok ? `${perpSide.value.toUpperCase()} opened @ $${price.value.toFixed(4)}` : result.msg }
+    if (result.ok) marginBtc.value = ''
+  } catch (err) {
+    tradeMsg.value = { ok: false, text: err.message || 'Position open failed' }
+  }
   setTimeout(() => { tradeMsg.value = null }, 3000)
 }
 
-function closePosition(posId) {
-  const result = store.closePerp(posId)
-  tradeMsg.value = { ok: result.ok, text: result.ok ? `Closed. PnL: $${(result.pnlUsd ?? 0).toFixed(2)}` : result.msg }
+async function closePosition(posId) {
+  try {
+    const result = await store.closePerp(posId)
+    tradeMsg.value = { ok: result.ok, text: result.ok ? `Closed. PnL: $${(result.pnlUsd ?? 0).toFixed(2)}` : result.msg }
+  } catch (err) {
+    tradeMsg.value = { ok: false, text: err.message || 'Close failed' }
+  }
   setTimeout(() => { tradeMsg.value = null }, 4000)
 }
 
@@ -332,7 +359,7 @@ function timeAgo(ts) {
         <!-- Wallet required banner -->
         <div v-if="!wallet.isConnected" class="mx-4 mt-4 flex items-center justify-between bg-amber-500/10 border border-amber-500/20 px-3 py-2.5">
           <p class="text-[11px] text-amber-400 font-light">Connect a wallet to trade</p>
-          <button class="text-[10px] tracking-[0.1em] uppercase text-amber-400 hover:text-white transition-colors" @click="showWalletModal = true">
+          <button class="text-[10px] tracking-[0.1em] uppercase text-amber-400 hover:text-white transition-colors" @click="openWallet">
             Connect →
           </button>
         </div>
@@ -496,6 +523,7 @@ function timeAgo(ts) {
     <!-- Wallet modal -->
     <Teleport to="body">
       <WalletConnectModal v-if="showWalletModal" @close="showWalletModal = false" />
+      <LoginModal v-if="showLoginModal" @close="showLoginModal = false" />
     </Teleport>
   </div>
 </template>

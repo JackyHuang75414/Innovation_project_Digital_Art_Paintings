@@ -2,23 +2,28 @@ package com.ren.yinghui.backend.config;
 
 import com.ren.yinghui.backend.vo.Result;
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(ConstraintViolationException.class)
-    public Result handleValidation(ConstraintViolationException e) {
-        String msg = e.getConstraintViolations().stream()
-                .map(v -> v.getMessage())
-                .findFirst()
-                .orElse("Invalid input");
-        return Result.error(msg);
+    @ExceptionHandler({
+            IllegalArgumentException.class,
+            ConstraintViolationException.class,
+            MethodArgumentNotValidException.class
+    })
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Result<Void> handleBadRequest(Exception exception) {
+        return Result.error(exception.getMessage());
     }
 
-    @ExceptionHandler(Exception.class)
-    public Result handleGeneral(Exception e) {
-        return Result.error(e.getMessage() != null ? e.getMessage() : "Internal server error");
+    @ExceptionHandler(RuntimeException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Result<Void> handleRuntime(RuntimeException exception) {
+        return Result.error(exception.getMessage());
     }
 }

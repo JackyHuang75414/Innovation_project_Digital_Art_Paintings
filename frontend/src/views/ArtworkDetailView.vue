@@ -1,41 +1,58 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
+import { useWishlistStore } from '@/stores/wishlist'
+import { getArtwork, getRecommendations } from '@/api/artworks'
 
 const cart = useCartStore()
+const wishlist = useWishlistStore()
+const route = useRoute()
 
-// Placeholder — replace with API fetch using useRoute().params.id
-const artwork = ref({
-  id: 1,
-  imageUrl: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=900',
-  title: 'Abstract Harmony',
-  artistName: 'Sophie Laurent',
-  artistCountry: 'France',
-  price: 89,
-  medium: 'Acrylic on Canvas',
-  dimensions: '60 × 80 cm',
-  year: 2024,
-  description: 'A vivid exploration of colour and emotion. This piece captures the tension between stillness and movement through layered brushwork and a bold chromatic palette.',
-  tags: ['abstract', 'colourful', 'expressive'],
-})
-
-const sizes = ['A4 Print', 'A3 Print', 'A2 Print', '50×70 cm', '60×80 cm']
-const selectedSize = ref('A3 Print')
+const artwork = ref(null)
+const recommendations = ref([])
+const selectedSize = ref('')
 const added = ref(false)
+const loading = ref(false)
+const error = ref('')
+
+const sizes = computed(() => artwork.value?.availableSizes?.length ? artwork.value.availableSizes : ['A4 Print'])
+
+watch(
+  () => route.params.id,
+  async id => {
+    loading.value = true
+    error.value = ''
+    try {
+      const [artRes, recRes] = await Promise.all([
+        getArtwork(id),
+        getRecommendations(id),
+      ])
+      artwork.value = artRes.data
+      recommendations.value = recRes.data ?? []
+      selectedSize.value = sizes.value[0]
+      await wishlist.loadMine()
+    } catch (err) {
+      error.value = err.message || 'Artwork not found'
+    } finally {
+      loading.value = false
+    }
+  },
+  { immediate: true }
+)
 
 function addToCart() {
+  if (!artwork.value) return
   cart.add(artwork.value, selectedSize.value)
   added.value = true
   setTimeout(() => { added.value = false }, 2000)
 }
 
-const recommendations = ref([
-  { id: 2, imageUrl: 'https://images.unsplash.com/photo-1547826039-bfc35e0f1ea8?w=400', title: 'Urban Geometry',  artistName: 'Marco Chen',     price: 120 },
-  { id: 3, imageUrl: 'https://images.unsplash.com/photo-1620503374956-c942862f0372?w=400', title: 'Blue Silence',   artistName: 'Amara Diallo',   price: 75 },
-  { id: 4, imageUrl: 'https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?w=400', title: 'Golden Hour',    artistName: 'Lena Kuznetsov', price: 99 },
-  { id: 5, imageUrl: 'https://images.unsplash.com/photo-1605721911519-3dfeb3be25e7?w=400', title: 'Forest Dream',   artistName: 'Jules Moreau',   price: 65 },
-])
+async function toggleWishlist() {
+  if (!artwork.value) return
+  await wishlist.toggle(artwork.value)
+}
 </script>
 
 <template>
@@ -52,7 +69,13 @@ const recommendations = ref([
     </div>
   </div>
 
-  <div class="max-w-screen-xl mx-auto px-6 lg:px-16 py-12 lg:py-16">
+  <div v-if="loading" class="max-w-screen-xl mx-auto px-6 lg:px-16 py-24 text-sm text-gray-500">
+    Loading artwork...
+  </div>
+  <div v-else-if="error || !artwork" class="max-w-screen-xl mx-auto px-6 lg:px-16 py-24 text-sm text-gray-500">
+    {{ error || 'Artwork not found' }}
+  </div>
+  <div v-else class="max-w-screen-xl mx-auto px-6 lg:px-16 py-12 lg:py-16">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
 
       <!-- Image -->
@@ -124,9 +147,30 @@ const recommendations = ref([
         </div>
 
         <!-- Add to cart -->
-        <button class="btn-primary w-full text-center" @click="addToCart">
-          {{ added ? 'Added to Cart' : 'Add to Cart' }}
-        </button>
+        <div class="grid grid-cols-[1fr_auto] gap-3">
+          <button class="btn-primary text-center" @click="addToCart">
+            {{ added ? 'Added to Cart' : 'Add to Cart' }}
+          </button>
+          <button
+            class="w-12 border flex items-center justify-center transition-colors"
+            :class="wishlist.isWishlisted(artwork.id)
+              ? 'border-[#E8552A] bg-[#E8552A]/10 text-[#E8552A]'
+              : 'border-gray-200 text-gray-500 hover:border-gray-400 hover:text-gray-900'"
+            :aria-label="wishlist.isWishlisted(artwork.id) ? 'Remove from wishlist' : 'Add to wishlist'"
+            @click="toggleWishlist"
+          >
+            <svg
+              class="w-4 h-4"
+              :class="wishlist.isWishlisted(artwork.id) ? 'fill-current' : ''"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              viewBox="0 0 24 24"
+            >
+              <path d="M4.318 6.318a4.5 4.5 0 0 1 6.364 0L12 7.636l1.318-1.318a4.5 4.5 0 0 1 6.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 0 1 0-6.364Z" />
+            </svg>
+          </button>
+        </div>
 
         <!-- Trust signals -->
         <div class="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">

@@ -1,17 +1,21 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { usePricesStore, CRYPTOS, FIATS } from '@/stores/prices'
 import { useTradingStore, TOTAL_SHARES } from '@/stores/trading'
 import { useAuthStore } from '@/stores/auth'
+import { useWishlistStore } from '@/stores/wishlist'
 import CryptoPriceBadge from '@/components/ui/CryptoPriceBadge.vue'
 
 const prices = usePricesStore()
 const store  = useTradingStore()
 const auth   = useAuthStore()
+const wishlist = useWishlistStore()
 const router = useRouter()
 
-const activeTab = ref('holdings')  // holdings | positions | orders | monitor | settings
+const activeTab = ref('holdings')  // holdings | wishlist | positions | orders | monitor | settings
+
+onMounted(() => wishlist.loadMine())
 
 // ── Settings state ────────────────────────────────────────────────────────────
 const LANGUAGES = [
@@ -51,21 +55,12 @@ function saveProfile() {
 
 function logout() {
   auth.logout()
+  wishlist.reset()
   router.push('/')
 }
 
-const showDeleteConfirm = ref(false)
-const deleteInput       = ref('')
-const deleteError       = ref('')
-const deleteLoading     = ref(false)
-
-async function confirmDelete() {
-  if (deleteInput.value !== 'DELETE') { deleteError.value = 'Type DELETE to confirm'; return }
-  deleteLoading.value = true
-  const result = await auth.deleteAccount()
-  deleteLoading.value = false
-  if (!result.ok) { deleteError.value = result.msg || 'Failed to delete account'; return }
-  router.push('/')
+async function toggleWishlist(artwork) {
+  await wishlist.toggle(artwork)
 }
 
 // ── Holdings ──────────────────────────────────────────────────────────────────
@@ -108,11 +103,17 @@ function openSell(art, maxQty) {
   sellModal.value = { art, maxQty }
   sellQty.value   = maxQty.toFixed(2)
 }
-function executeSell() {
+async function executeSell() {
   const qty = parseFloat(sellQty.value)
   if (!qty || qty <= 0) return
-  const r = store.sellShares(sellModal.value.art.id, qty)
-  sellMsg.value = r.ok ? `Sold ${qty.toFixed(2)} shares @ $${r.price.toFixed(4)}` : r.msg
+  let r
+  try {
+    r = await store.sellShares(sellModal.value.art.id, qty)
+    sellMsg.value = r.ok ? `Sold ${qty.toFixed(2)} shares @ $${r.price.toFixed(4)}` : r.msg
+  } catch (err) {
+    r = { ok: false }
+    sellMsg.value = err.message || 'Sell failed'
+  }
   setTimeout(() => {
     sellMsg.value   = null
     if (r.ok) sellModal.value = null
@@ -121,9 +122,13 @@ function executeSell() {
 
 // ── Quick close perp ──────────────────────────────────────────────────────────
 const closeMsg = ref(null)
-function closePos(posId) {
-  const r = store.closePerp(posId)
-  closeMsg.value = r.ok ? `Closed. PnL: $${(r.pnlUsd ?? 0).toFixed(2)}` : r.msg
+async function closePos(posId) {
+  try {
+    const r = await store.closePerp(posId)
+    closeMsg.value = r.ok ? `Closed. PnL: $${(r.pnlUsd ?? 0).toFixed(2)}` : r.msg
+  } catch (err) {
+    closeMsg.value = err.message || 'Close failed'
+  }
   setTimeout(() => { closeMsg.value = null }, 3000)
 }
 
@@ -143,9 +148,9 @@ function openTpSl(item, type = 'spot') {
   slInput.value   = existing?.slPrice?.toFixed(4) ?? ''
   tpslQty.value   = existing?.qty ?? ''
 }
-function saveTpSl() {
+async function saveTpSl() {
   const m = tpslModal.value
-  store.setTpSl({
+  await store.setTpSl({
     artworkId: m.artworkId,
     type:      m.type,
     posId:     m.posId,
@@ -153,6 +158,17 @@ function saveTpSl() {
     slPrice:   slInput.value   ? parseFloat(slInput.value)  : null,
     qty:       tpslQty.value   ? parseFloat(tpslQty.value)  : null,
   })
+  tpslModal.value = null
+}
+
+async function cancelTpSlOrder(orderId) {
+  if (!orderId) return
+  await store.cancelTpSl(orderId)
+}
+
+async function clearCurrentTpSl() {
+  const orderId = store.wallet.tpslOrders.find(o => o.artworkId === tpslModal.value.artworkId)?.id
+  await cancelTpSlOrder(orderId)
   tpslModal.value = null
 }
 
@@ -214,6 +230,7 @@ function timeAgo(ts) {
       <button
         v-for="tab in [
           { id: 'holdings',  label: 'Holdings',   badge: holdings.length },
+          { id: 'wishlist',  label: 'Wishlist',   badge: wishlist.items.length },
           { id: 'positions', label: 'Positions',  badge: positions.length },
           { id: 'orders',    label: 'TP / SL',    badge: store.wallet.tpslOrders.length },
           { id: 'monitor',   label: '🦞 AI Monitor' },
@@ -288,6 +305,48 @@ function timeAgo(ts) {
             </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ WISHLIST ══════════════ -->
+    <div v-else-if="activeTab === 'wishlist'">
+      <div v-if="wishlist.items.length === 0" class="py-20 text-center">
+        <p class="font-display italic text-gray-600 text-2xl mb-2">No saved works yet</p>
+        <p class="text-gray-700 text-sm font-light mb-6">Save artworks from Discover or artwork detail pages.</p>
+        <RouterLink to="/browse" class="btn-primary text-sm px-6 py-2.5">Discover Works</RouterLink>
+      </div>
+
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <RouterLink
+          v-for="art in wishlist.items"
+          :key="art.id"
+          :to="`/artwork/${art.id}`"
+          class="card-dark group overflow-hidden flex flex-col"
+        >
+          <div class="relative overflow-hidden aspect-[4/3] bg-[#0d0d10]">
+            <img
+              :src="art.imageUrl"
+              :alt="art.title"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              loading="lazy"
+            />
+            <button
+              class="absolute top-3 right-3 w-8 h-8 border border-[#E8552A]/70 bg-[#E8552A]/10 text-[#E8552A] flex items-center justify-center transition-colors hover:bg-[#E8552A]/20"
+              aria-label="Remove from wishlist"
+              @click.prevent="toggleWishlist(art)"
+            >
+              <svg class="w-4 h-4 fill-current" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M4.318 6.318a4.5 4.5 0 0 1 6.364 0L12 7.636l1.318-1.318a4.5 4.5 0 0 1 6.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 0 1 0-6.364Z" />
+              </svg>
+            </button>
+          </div>
+          <div class="p-4 flex flex-col gap-1 flex-1">
+            <p class="text-[10px] tracking-[0.18em] uppercase text-gray-600 font-light">{{ art.artistName }}</p>
+            <p class="font-display italic text-gray-100 text-base leading-snug mb-1">{{ art.title }}</p>
+            <p class="text-[11px] text-gray-500 font-light">{{ art.medium }}</p>
+            <p class="text-sm font-medium text-gray-100 mt-auto pt-3 border-t border-white/[0.05]">€{{ art.price }}</p>
+          </div>
+        </RouterLink>
       </div>
     </div>
 
@@ -379,7 +438,7 @@ function timeAgo(ts) {
               <span v-if="o.slPrice" class="text-red-400">SL ${{ fmt(o.slPrice) }}</span>
               <span v-if="o.qty"     class="text-gray-500">{{ o.qty.toFixed(2) }} shares</span>
             </div>
-            <button class="text-[10px] uppercase text-gray-600 hover:text-red-400 transition-colors" @click="store.cancelTpSl(o.id)">Cancel</button>
+            <button class="text-[10px] uppercase text-gray-600 hover:text-red-400 transition-colors" @click="cancelTpSlOrder(o.id)">Cancel</button>
           </div>
         </div>
       </div>
@@ -702,7 +761,7 @@ function timeAgo(ts) {
       <!-- Danger zone / Logout -->
       <div class="card-dark p-5 lg:col-span-2 border-red-900/20">
         <p class="text-[10px] tracking-[0.25em] uppercase text-gray-500 mb-4 font-light">Account</p>
-        <div class="flex items-center justify-between flex-wrap gap-4 mb-5">
+        <div class="flex items-center justify-between flex-wrap gap-4">
           <div>
             <p class="text-gray-300 text-sm font-light">Signed in as <span class="text-white font-medium">{{ auth.user?.displayName }}</span></p>
             <p class="text-gray-600 text-[11px] font-mono mt-0.5">@{{ auth.user?.username }}</p>
@@ -717,26 +776,6 @@ function timeAgo(ts) {
             </svg>
             Sign Out
           </button>
-        </div>
-
-        <!-- Delete account -->
-        <div class="border-t border-red-900/20 pt-4">
-          <p class="text-[10px] tracking-[0.25em] uppercase text-red-900 mb-2 font-light">Danger Zone</p>
-          <div class="flex items-center justify-between flex-wrap gap-4">
-            <div>
-              <p class="text-gray-400 text-sm font-light">Delete account</p>
-              <p class="text-gray-600 text-[11px] font-light mt-0.5">Permanently removes your account and all data. This cannot be undone.</p>
-            </div>
-            <button
-              class="flex items-center gap-2 px-5 py-2.5 border border-red-800/50 text-red-600 hover:bg-red-900/20 hover:border-red-700/70 transition-colors text-[11px] tracking-[0.15em] uppercase font-medium"
-              @click="showDeleteConfirm = true; deleteInput = ''; deleteError = ''"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/>
-              </svg>
-              Delete My Account
-            </button>
-          </div>
         </div>
       </div>
 
@@ -798,60 +837,9 @@ function timeAgo(ts) {
         <button
           v-if="tpslModal.type === 'spot' && store.wallet.tpslOrders.find(o => o.artworkId === tpslModal.artworkId && o.type === 'spot')"
           class="w-full mt-2 py-1.5 text-[10px] uppercase text-gray-600 hover:text-red-400 transition-colors"
-          @click="store.cancelTpSl(store.wallet.tpslOrders.find(o => o.artworkId === tpslModal.artworkId)?.id); tpslModal = null"
+          @click="clearCurrentTpSl"
         >Remove Order</button>
       </div>
     </div>
-    <!-- DELETE ACCOUNT MODAL -->
-    <div v-if="showDeleteConfirm" class="fixed inset-0 z-[9000] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" @click.self="showDeleteConfirm = false">
-      <div class="bg-[#111116] border border-red-900/40 w-full max-w-sm p-6 shadow-2xl">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-10 h-10 rounded-full bg-red-900/30 border border-red-800/40 flex items-center justify-center flex-shrink-0">
-            <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/>
-            </svg>
-          </div>
-          <div>
-            <p class="text-white font-medium">Delete account?</p>
-            <p class="text-gray-600 text-[11px] font-light">This action is permanent and cannot be undone.</p>
-          </div>
-        </div>
-
-        <p class="text-gray-500 text-[11px] font-light mb-3 leading-relaxed">
-          All your data — holdings, positions, order history — will be permanently deleted.
-        </p>
-
-        <div class="mb-4">
-          <label class="text-[10px] tracking-[0.15em] uppercase text-gray-600 block mb-1.5">
-            Type <span class="text-red-400 font-mono">DELETE</span> to confirm
-          </label>
-          <input
-            v-model="deleteInput"
-            type="text"
-            placeholder="DELETE"
-            class="w-full bg-[#0d0d10] border border-red-800/40 text-gray-200 px-3 py-2.5 text-sm font-mono outline-none focus:border-red-600/60 placeholder:text-gray-700"
-          />
-        </div>
-
-        <p v-if="deleteError" class="text-[11px] text-red-400 mb-3">{{ deleteError }}</p>
-
-        <div class="flex gap-2">
-          <button
-            :disabled="deleteLoading"
-            class="flex-1 py-2.5 bg-red-700 hover:bg-red-600 disabled:opacity-50 text-white text-[11px] tracking-[0.15em] uppercase transition-colors"
-            @click="confirmDelete"
-          >
-            {{ deleteLoading ? 'Deleting…' : 'Delete Account' }}
-          </button>
-          <button
-            class="flex-1 py-2.5 bg-white/[0.05] text-gray-400 text-[11px] tracking-[0.15em] uppercase hover:bg-white/[0.08] transition-colors"
-            @click="showDeleteConfirm = false"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
-
   </Teleport>
 </template>

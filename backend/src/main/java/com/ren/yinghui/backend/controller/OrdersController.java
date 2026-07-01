@@ -9,10 +9,10 @@ import com.ren.yinghui.backend.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -27,15 +27,15 @@ public class OrdersController {
         this.ordersService = ordersService;
     }
     //create order
-    @PostMapping("/create")
+    @PostMapping
     public Result<OrderCreateVO> createOrder(@RequestBody @Validated CreateOrderDTO dto){
         OrderCreateVO order = ordersService.createOrder(dto);
         return Result.success(order);
     }
 
     //get order detail
-    @GetMapping("/detail")
-    public Result<OrderDetailVO> detail(@RequestParam Long id) {
+    @GetMapping("/{id}")
+    public Result<OrderDetailVO> detail(@PathVariable Long id) {
         OrderDetailVO order = ordersService.findDetailById(id);
         if (order == null) {
             return Result.error("order not found");

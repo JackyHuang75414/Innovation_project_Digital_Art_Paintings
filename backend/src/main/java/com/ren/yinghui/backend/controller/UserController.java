@@ -57,7 +57,7 @@ public class UserController {
         }else{
             //user exists
             //if encrypted password matches
-            if(userService.checkPassword(password, user.getPasswordHash())){
+            if(userService.authenticate(user, password)){
                 //password correct
                 //generate token
                 Map<String, Object> claims = new HashMap<>();

@@ -18,6 +18,9 @@ public interface UserService {
     //check password
     boolean checkPassword(String password, String passwordHash);
 
+    //authenticate existing user
+    boolean authenticate(User user, String password);
+
     //get current user info
     UserInfoVO findCurrentUser();
 }

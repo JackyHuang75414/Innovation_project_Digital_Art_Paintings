@@ -141,30 +141,33 @@ function selectFiat(code)  { prices.setFiat(code); showCurrencyMenu.value = fals
           </Transition>
         </div>
 
-        <!-- Connect Wallet button -->
-        <button
-          v-if="!wallet.isConnected"
-          class="hidden sm:flex items-center gap-2 px-3 py-1.5 border border-[#E8552A]/50 hover:border-[#E8552A] text-[#E8552A] text-[11px] tracking-[0.1em] uppercase font-medium transition-colors"
-          @click="showWalletModal = true"
-        >
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-              d="M21 12a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 12m18 0v6a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 18v-6m18 0V9M3 12V9m18-3a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 9m18 0V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v3"/>
-          </svg>
-          Connect Wallet
-        </button>
+        <!-- Wallet buttons: only visible after login -->
+        <template v-if="auth.isLoggedIn">
+          <!-- Connect Wallet button -->
+          <button
+            v-if="!wallet.isConnected"
+            class="hidden sm:flex items-center gap-2 px-3 py-1.5 border border-[#E8552A]/50 hover:border-[#E8552A] text-[#E8552A] text-[11px] tracking-[0.1em] uppercase font-medium transition-colors"
+            @click="showWalletModal = true"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M21 12a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 12m18 0v6a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 18v-6m18 0V9M3 12V9m18-3a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 9m18 0V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v3"/>
+            </svg>
+            Connect Wallet
+          </button>
 
-        <!-- Connected wallet pill -->
-        <button
-          v-else
-          class="hidden sm:flex items-center gap-2 px-3 py-1.5 border border-green-500/30 bg-green-500/10 text-green-400 text-[11px] tracking-[0.1em] uppercase font-medium transition-colors hover:border-red-500/40 hover:bg-red-500/5 hover:text-red-400 group"
-          @click="wallet.disconnect()"
-          :title="`${wallet.shortAddress} — click to disconnect`"
-        >
-          <span class="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0" />
-          <span class="font-mono normal-case tracking-normal">{{ wallet.shortAddress }}</span>
-          <span class="hidden group-hover:inline text-[9px] uppercase tracking-wide">Disconnect</span>
-        </button>
+          <!-- Connected wallet pill -->
+          <button
+            v-else
+            class="hidden sm:flex items-center gap-2 px-3 py-1.5 border border-green-500/30 bg-green-500/10 text-green-400 text-[11px] tracking-[0.1em] uppercase font-medium transition-colors hover:border-red-500/40 hover:bg-red-500/5 hover:text-red-400 group"
+            @click="wallet.disconnect()"
+            :title="`${wallet.shortAddress} — click to disconnect`"
+          >
+            <span class="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0" />
+            <span class="font-mono normal-case tracking-normal">{{ wallet.shortAddress }}</span>
+            <span class="hidden group-hover:inline text-[9px] uppercase tracking-wide">Disconnect</span>
+          </button>
+        </template>
 
         <!-- Cart -->
         <RouterLink
