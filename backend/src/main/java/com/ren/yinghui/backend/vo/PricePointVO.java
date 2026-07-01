@@ -3,10 +3,10 @@ package com.ren.yinghui.backend.vo;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Data
 public class PricePointVO {
-    private LocalDateTime t;
+    /** Unix epoch milliseconds — avoids Jackson LocalDateTime serialization issues */
+    private Long t;
     private BigDecimal p;
 }

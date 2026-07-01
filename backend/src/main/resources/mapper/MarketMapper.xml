@@ -102,7 +102,7 @@
     </select>
 
     <select id="findPriceHistory" resultType="com.ren.yinghui.backend.vo.PricePointVO">
-        SELECT recorded_at AS t, price AS p
+        SELECT UNIX_TIMESTAMP(recorded_at) * 1000 AS t, price AS p
         FROM artwork_price_history
         WHERE artwork_id = #{artworkId}
         ORDER BY recorded_at ASC

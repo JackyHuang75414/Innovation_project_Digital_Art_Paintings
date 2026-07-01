@@ -651,8 +651,8 @@ INSERT INTO artworks (
 ) VALUES
   (
     1, 1, 2, 'Everydays: The First 5000 Days',
-    'https://static.wixstatic.com/media/a64726_8b0e3cb2371c4d58ab569c6a5d521719~mv2.jpg/v1/fill/w_940,h_940,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/BEEPLE-EVERYDAYS_THE_FIRST_5000_DAYS_3k_.jpg',
-    'https://static.wixstatic.com/media/a64726_8b0e3cb2371c4d58ab569c6a5d521719~mv2.jpg/v1/fill/w_3000,h_3000,al_c,q_90,enc_avif,quality_auto/BEEPLE-EVERYDAYS_THE_FIRST_5000_DAYS_3k_.jpg',
+    'https://upload.wikimedia.org/wikipedia/en/thumb/a/a7/Everydays--The_First_5000_Days.jpg/500px-Everydays--The_First_5000_Days.jpg',
+    'https://upload.wikimedia.org/wikipedia/en/a/a7/Everydays--The_First_5000_Days.jpg',
     6.90, 'Digital', '1 / 1', 'Square', 'Mixed', '60 x 80 cm', 2021,
     'A 21,069 x 21,069 pixel collage of 5,000 individual digital works created daily from May 2007 to January 2021.',
     'Trending', 20, 130, 18
@@ -660,7 +660,7 @@ INSERT INTO artworks (
   (
     2, 2, 2, 'Right-click and Save As guy',
     'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Right-Click_and_Save_as_Guy.gif/500px-Right-Click_and_Save_as_Guy.gif',
-    'https://raw2.seadn.io/ethereum/0x41a322b28d0ff354040e2cbc676f0320d8c8850d/92579d4e11c5125592c530d21d721e/fb92579d4e11c5125592c530d21d721e.gif',
+    'https://upload.wikimedia.org/wikipedia/commons/d/d6/Right-Click_and_Save_as_Guy.gif',
     2.80, 'Animated GIF', '1 / 1', 'Square', 'Purple', '50 x 50 cm', 2018,
     'Released in 2018, this animated GIF became one of the defining images of the NFT ownership debate.',
     'New', 15, 95, 9
@@ -668,7 +668,7 @@ INSERT INTO artworks (
   (
     3, 2, 2, 'A Coin for the Ferryman',
     'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/A_Coin_for_the_Ferryman.gif/500px-A_Coin_for_the_Ferryman.gif',
-    'https://raw2.seadn.io/ethereum/0x41a322b28d0ff354040e2cbc676f0320d8c8850d/c66ed71e3786537324770103976fa5/99c66ed71e3786537324770103976fa5.gif',
+    'https://upload.wikimedia.org/wikipedia/commons/a/a8/A_Coin_for_the_Ferryman.gif',
     1.92, 'Animated GIF', '1 / 1', 'Square', 'Blue', '70 x 50 cm', 2018,
     'A haunting meditation on mortality drawn from Greek mythology, rendered in fluorescent-on-void glitch loops.',
     NULL, 18, 78, 6
