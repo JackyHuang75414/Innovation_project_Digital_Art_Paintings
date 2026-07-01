@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/JackyHuang75414/Innovation_project_Digital_Art_Paintings/issues"
   },
-  "homepage": "https://github.com/JackyHuang75414/Innovation_project_Digital_Art_Paintings#readme"
+  "homepage": "https://github.com/JackyHuang75414/Innovation_project_Digital_Art_Paintings#readme",
+  "dependencies": {
+    "pptxgenjs": "^4.0.1"
+  }
 }

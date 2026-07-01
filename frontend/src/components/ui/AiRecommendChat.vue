@@ -89,7 +89,7 @@ function initWelcome() {
   if (auth.isPaid) {
     messages.value = [{
       role: 'ai',
-      text: `Welcome back, ${auth.displayName}。我是您的專屬交易助理。我正在實時監控您關注的藝術品價格，一旦有重大變動我會立即通知您。您也可以隨時向我提問或下達交易指令。`,
+      text: `Welcome back, ${auth.displayName}。I am your dedicated trading assistant. I monitor the prices of the artworks you are tracking in real time and will notify you immediately of any significant changes. You can also ask me questions or place trading orders at any time.`,
       artworks: [],
       type: 'welcome',
       actions: null,
@@ -98,7 +98,7 @@ function initWelcome() {
     const s = profile.profileSummary()
     messages.value = [{
       role: 'ai',
-      text: `歡迎回來！我注意到您對 ${s.tags} 類型的藝術品很感興趣。我已經根據您的瀏覽記錄準備了一些推薦，隨時可以為您提供投資建議。`,
+      text: `Welcome back! I noticed you are interested in ${s.tags} artworks. I have prepared some recommendations based on your browsing history and am ready to provide investment advice whenever you need it.`,
       artworks: [],
       type: 'welcome',
       actions: null,
