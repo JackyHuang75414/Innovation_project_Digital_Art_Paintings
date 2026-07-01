@@ -142,11 +142,11 @@ CREATE TABLE wallet_connections (
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ── Seed demo users (password_hash is NOT NULL in DeepSeek schema) ────────────
-INSERT IGNORE INTO users (id, name, email, password_hash, role)
+INSERT IGNORE INTO users (id, name, email, password_hash)
 VALUES
-    (1, 'demo',  'demo@artex.io',  'DEMO_ACCOUNT', 'customer'),
-    (2, 'whale', 'whale@artex.io', 'DEMO_ACCOUNT', 'customer'),
-    (3, 'algo',  'algo@artex.io',  'DEMO_ACCOUNT', 'customer');
+    (1, 'demo',  'demo@artex.io',  'DEMO_ACCOUNT'),
+    (2, 'whale', 'whale@artex.io', 'DEMO_ACCOUNT'),
+    (3, 'algo',  'algo@artex.io',  'DEMO_ACCOUNT');
 
 INSERT INTO user_wallets (user_id, usd_balance, btc_balance)
 VALUES
