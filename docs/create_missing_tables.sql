@@ -1,5 +1,6 @@
 -- Create all tables that DeepSeek's setup_db.sql omitted, and add missing columns.
--- Safe to run multiple times (IF NOT EXISTS / IF NOT EXISTS column checks use ADD COLUMN IF NOT EXISTS).
+-- Uses DROP + CREATE for trading tables (safe — no real data yet).
+-- Uses dynamic SQL for ALTER TABLE to support MySQL 5.7+.
 -- Run this FIRST, then run seed_orderbook_trades.sql.
 
 USE digital_art_paintings;
@@ -7,20 +8,55 @@ USE digital_art_paintings;
 SET SQL_SAFE_UPDATES = 0;
 SET FOREIGN_KEY_CHECKS = 0;
 
--- ── Add missing columns to artworks ──────────────────────────────────────────
-ALTER TABLE artworks
-    ADD COLUMN IF NOT EXISTS image_large_url TEXT NULL AFTER image_url,
-    ADD COLUMN IF NOT EXISTS edition VARCHAR(100) NULL;
+-- ── Add image_large_url to artworks (MySQL 5.7 compatible) ───────────────────
+SET @exists_large = (
+    SELECT COUNT(*) FROM information_schema.columns
+    WHERE table_schema = DATABASE()
+      AND table_name   = 'artworks'
+      AND column_name  = 'image_large_url'
+);
+SET @sql_large = IF(@exists_large = 0,
+    'ALTER TABLE artworks ADD COLUMN image_large_url TEXT NULL AFTER image_url',
+    'SELECT 1'
+);
+PREPARE stmt FROM @sql_large;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- ── Add edition to artworks (MySQL 5.7 compatible) ───────────────────────────
+SET @exists_edition = (
+    SELECT COUNT(*) FROM information_schema.columns
+    WHERE table_schema = DATABASE()
+      AND table_name   = 'artworks'
+      AND column_name  = 'edition'
+);
+SET @sql_edition = IF(@exists_edition = 0,
+    'ALTER TABLE artworks ADD COLUMN edition VARCHAR(100) NULL',
+    'SELECT 1'
+);
+PREPARE stmt FROM @sql_edition;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- ── Drop trading tables to guarantee correct schema ───────────────────────────
+-- These are safe to drop — VmmService repopulates them on every 2s tick.
+DROP TABLE IF EXISTS tpsl_orders;
+DROP TABLE IF EXISTS portfolio_share_holdings;
+DROP TABLE IF EXISTS trade_executions;
+DROP TABLE IF EXISTS order_book_orders;
+DROP TABLE IF EXISTS perp_positions;
+DROP TABLE IF EXISTS wallet_connections;
+DROP TABLE IF EXISTS user_wallets;
 
 -- ── user_wallets ──────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS user_wallets (
+CREATE TABLE user_wallets (
     user_id     BIGINT PRIMARY KEY,
     usd_balance DECIMAL(20, 8) NOT NULL DEFAULT 0,
     btc_balance DECIMAL(20, 8) NOT NULL DEFAULT 0
 );
 
 -- ── portfolio_share_holdings ──────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS portfolio_share_holdings (
+CREATE TABLE portfolio_share_holdings (
     id         BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id    BIGINT        NOT NULL,
     artwork_id BIGINT        NOT NULL,
@@ -30,8 +66,8 @@ CREATE TABLE IF NOT EXISTS portfolio_share_holdings (
 );
 
 -- ── perp_positions ────────────────────────────────────────────────────────────
--- Column names match MarketMapper.xml: opened_at, closed_at
-CREATE TABLE IF NOT EXISTS perp_positions (
+-- Columns opened_at / closed_at match MarketMapper.xml queries
+CREATE TABLE perp_positions (
     id          BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id     BIGINT        NOT NULL,
     artwork_id  BIGINT        NOT NULL,
@@ -46,8 +82,8 @@ CREATE TABLE IF NOT EXISTS perp_positions (
 );
 
 -- ── tpsl_orders ──────────────────────────────────────────────────────────────
--- Column names match MarketMapper.xml: perp_position_id, quantity
-CREATE TABLE IF NOT EXISTS tpsl_orders (
+-- Columns perp_position_id / quantity match MarketMapper.xml queries
+CREATE TABLE tpsl_orders (
     id                BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id           BIGINT        NOT NULL,
     artwork_id        BIGINT        NOT NULL,
@@ -61,7 +97,7 @@ CREATE TABLE IF NOT EXISTS tpsl_orders (
 );
 
 -- ── order_book_orders ─────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS order_book_orders (
+CREATE TABLE order_book_orders (
     id             BIGINT AUTO_INCREMENT PRIMARY KEY,
     artwork_id     BIGINT        NOT NULL,
     user_id        BIGINT        NULL,
@@ -76,7 +112,7 @@ CREATE TABLE IF NOT EXISTS order_book_orders (
 );
 
 -- ── trade_executions ─────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS trade_executions (
+CREATE TABLE trade_executions (
     id              BIGINT AUTO_INCREMENT PRIMARY KEY,
     artwork_id      BIGINT        NOT NULL,
     buyer_user_id   BIGINT        NULL,
@@ -91,7 +127,7 @@ CREATE TABLE IF NOT EXISTS trade_executions (
 );
 
 -- ── wallet_connections ───────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS wallet_connections (
+CREATE TABLE wallet_connections (
     id              BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id         BIGINT        NOT NULL,
     wallet_type     VARCHAR(50)   NOT NULL,
@@ -105,22 +141,24 @@ CREATE TABLE IF NOT EXISTS wallet_connections (
 
 SET FOREIGN_KEY_CHECKS = 1;
 
--- ── Seed demo users & wallets ─────────────────────────────────────────────────
--- password_hash is NOT NULL in DeepSeek's schema, so use a placeholder
+-- ── Seed demo users (password_hash is NOT NULL in DeepSeek schema) ────────────
 INSERT IGNORE INTO users (id, name, email, password_hash, role)
 VALUES
     (1, 'demo',  'demo@artex.io',  'DEMO_ACCOUNT', 'customer'),
     (2, 'whale', 'whale@artex.io', 'DEMO_ACCOUNT', 'customer'),
     (3, 'algo',  'algo@artex.io',  'DEMO_ACCOUNT', 'customer');
 
-INSERT IGNORE INTO user_wallets (user_id, usd_balance, btc_balance)
+INSERT INTO user_wallets (user_id, usd_balance, btc_balance)
 VALUES
     (1,  10000.00, 0.50),
     (2, 200000.00, 3.00),
-    (3,  50000.00, 1.20);
+    (3,  50000.00, 1.20)
+ON DUPLICATE KEY UPDATE usd_balance = VALUES(usd_balance), btc_balance = VALUES(btc_balance);
+
+SET SQL_SAFE_UPDATES = 1;
 
 -- ── Verify ────────────────────────────────────────────────────────────────────
--- Expected: all 6 tables appear, artworks has image_large_url column
+-- Should show 6 table names
 SELECT table_name
 FROM information_schema.tables
 WHERE table_schema = 'digital_art_paintings'
@@ -130,8 +168,10 @@ WHERE table_schema = 'digital_art_paintings'
   )
 ORDER BY table_name;
 
+-- Should show edition, image_large_url
 SELECT column_name
 FROM information_schema.columns
 WHERE table_schema = 'digital_art_paintings'
-  AND table_name = 'artworks'
-  AND column_name IN ('image_large_url','edition');
+  AND table_name   = 'artworks'
+  AND column_name  IN ('image_large_url', 'edition')
+ORDER BY column_name;
