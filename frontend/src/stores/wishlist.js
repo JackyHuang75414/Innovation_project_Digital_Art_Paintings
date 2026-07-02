@@ -28,6 +28,12 @@ export const useWishlistStore = defineStore('wishlist', () => {
       items.value = data ?? []
       loadedForUserId.value = auth.user?.id ?? null
       return items.value
+    } catch (err) {
+      if (err.response?.status === 401) {
+        reset()
+        return []
+      }
+      throw err
     } finally {
       loading.value = false
     }

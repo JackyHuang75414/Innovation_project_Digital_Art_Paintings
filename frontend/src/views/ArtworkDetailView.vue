@@ -32,11 +32,16 @@ watch(
       artwork.value = artRes.data
       recommendations.value = recRes.data ?? []
       selectedSize.value = sizes.value[0]
-      await wishlist.loadMine()
     } catch (err) {
       error.value = err.message || 'Artwork not found'
     } finally {
       loading.value = false
+    }
+
+    try {
+      await wishlist.loadMine()
+    } catch {
+      wishlist.reset()
     }
   },
   { immediate: true }

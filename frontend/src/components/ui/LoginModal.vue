@@ -35,9 +35,11 @@ async function submit() {
     : await auth.login(name, password.value)
   loading.value = false
   if (!result.ok) { error.value = result.msg; return }
-  await store.loadWallet()
-  await wallet.loadConnection()
-  await wishlist.loadMine({ force: true })
+  await Promise.allSettled([
+    store.loadWallet(),
+    wallet.loadConnection(),
+    wishlist.loadMine({ force: true }),
+  ])
   emit('close')
 }
 

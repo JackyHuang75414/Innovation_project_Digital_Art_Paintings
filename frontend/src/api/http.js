@@ -16,9 +16,19 @@ http.interceptors.response.use(response => {
   const body = response.data
   if (body && typeof body === 'object' && 'code' in body && 'data' in body) {
     if (body.code !== 0) {
-      return Promise.reject(new Error(body.message || 'Request failed'))
+      const error = new Error(body.message || 'Request failed')
+      error.response = response
+      return Promise.reject(error)
     }
     response.data = body.data
   }
   return response
+}, error => {
+  const message = error.response?.data?.message
+  if (message) error.message = message
+  if (error.response?.status === 401) {
+    localStorage.removeItem(TOKEN_KEY)
+    localStorage.removeItem('artex_user')
+  }
+  return Promise.reject(error)
 })

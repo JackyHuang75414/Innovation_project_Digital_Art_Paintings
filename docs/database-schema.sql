@@ -711,8 +711,8 @@ INSERT INTO artworks (
   ),
   (
     4, 3, 2, 'The Pixel',
-    'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Pakpixel.jpg/500px-Pakpixel.jpg',
-    'https://upload.wikimedia.org/wikipedia/commons/7/7e/Pakpixel.jpg',
+    '/artworks/the-pixel.jpg',
+    '/artworks/the-pixel.jpg',
     3.20, 'Digital (1 x 1 px)', '1 / 1', 'Square', 'White', '1 x 1 px', 2021,
     'A single pixel sold at Sotheby''s in 2021, reducing art to its indivisible atomic unit.',
     NULL, 12, 81, 7
@@ -735,140 +735,140 @@ INSERT INTO artworks (
   ),
   (
     7, 5, 2, 'Neon Memory Grid',
-    '/artworks/neon-memory-grid.svg', '/artworks/neon-memory-grid.svg',
+    '/artworks/neon-memory-grid.jpg', '/artworks/neon-memory-grid.jpg',
     1.15, 'Generative Vector', 'Edition of 12', 'Square', 'Mixed', '60 x 60 cm', 2026,
     'A luminous grid of remembered signals, built from layered geometry and archival colour fields.',
     'New', 24, 54, 5
   ),
   (
     8, 8, 2, 'Liquid Data Cathedral',
-    '/artworks/liquid-data-cathedral.svg', '/artworks/liquid-data-cathedral.svg',
+    '/artworks/liquid-data-cathedral.jpg', '/artworks/liquid-data-cathedral.jpg',
     1.72, 'AI Data Sculpture', '1 / 1', 'Square', 'Blue', '80 x 80 cm', 2026,
     'A vaulted structure of synthetic data, suspended between sacred geometry and machine vision.',
     'Trending', 15, 88, 12
   ),
   (
     9, 7, 2, 'Blue Noise Archive',
-    '/artworks/blue-noise-archive.svg', '/artworks/blue-noise-archive.svg',
+    '/artworks/blue-noise-archive.jpg', '/artworks/blue-noise-archive.jpg',
     0.94, 'Digital Abstract', 'Edition of 25', 'Square', 'Blue', '50 x 50 cm', 2025,
     'An atmospheric study of noisy memory, soft signals and drifting archival light.',
     NULL, 30, 43, 3
   ),
   (
     10, 5, 2, 'Chrome Bloom Protocol',
-    '/artworks/chrome-bloom-protocol.svg', '/artworks/chrome-bloom-protocol.svg',
+    '/artworks/chrome-bloom-protocol.jpg', '/artworks/chrome-bloom-protocol.jpg',
     2.35, 'Algorithmic Bloom', '1 / 1', 'Square', 'Red', '70 x 70 cm', 2026,
     'A polished synthetic flower generated from mirrored petals and protocol-like symmetry.',
     'Limited', 10, 76, 9
   ),
   (
     11, 10, 2, 'Solar Fragment Study',
-    '/artworks/solar-fragment-study.svg', '/artworks/solar-fragment-study.svg',
+    '/artworks/solar-fragment-study.jpg', '/artworks/solar-fragment-study.jpg',
     1.48, 'Digital Painting', 'Edition of 15', 'Square', 'Orange', '60 x 60 cm', 2025,
     'A concentrated solar form fractured into layered heat, ritual marks and dark core geometry.',
     'Trending', 18, 70, 8
   ),
   (
     12, 7, 2, 'Velvet Signal Map',
-    '/artworks/velvet-signal-map.svg', '/artworks/velvet-signal-map.svg',
+    '/artworks/velvet-signal-map.jpg', '/artworks/velvet-signal-map.jpg',
     0.82, 'Signal Mapping', 'Edition of 30', 'Landscape', 'Purple', '70 x 50 cm', 2026,
     'A soft map of competing signals, shaped like weather patterns over an invisible network.',
     NULL, 32, 39, 2
   ),
   (
     13, 9, 2, 'Monolith Rain Index',
-    '/artworks/monolith-rain-index.svg', '/artworks/monolith-rain-index.svg',
+    '/artworks/monolith-rain-index.jpg', '/artworks/monolith-rain-index.jpg',
     1.26, 'Conceptual Digital', 'Edition of 20', 'Portrait', 'Black', '50 x 70 cm', 2025,
     'A severe monolith of falling data, indexed by cold lines and machine-readable traces.',
     NULL, 20, 51, 4
   ),
   (
     14, 8, 2, 'Opal Circuit Garden',
-    '/artworks/opal-circuit-garden.svg', '/artworks/opal-circuit-garden.svg',
+    '/artworks/opal-circuit-garden.jpg', '/artworks/opal-circuit-garden.jpg',
     1.05, 'Vector System', 'Edition of 24', 'Square', 'Green', '60 x 60 cm', 2026,
     'A garden of circuit paths where nodes bloom like synthetic opals in clean morning light.',
     'New', 26, 57, 5
   ),
   (
     15, 6, 2, 'Pixel Tide Window',
-    '/artworks/pixel-tide-window.svg', '/artworks/pixel-tide-window.svg',
+    '/artworks/pixel-tide-window.jpg', '/artworks/pixel-tide-window.jpg',
     0.68, 'Pixel Study', 'Edition of 40', 'Square', 'Blue', '45 x 45 cm', 2025,
     'A crisp pixel window where tide, colour and modular memory collapse into a small square.',
     NULL, 40, 34, 2
   ),
   (
     16, 10, 2, 'Ember Dream Ledger',
-    '/artworks/ember-dream-ledger.svg', '/artworks/ember-dream-ledger.svg',
+    '/artworks/ember-dream-ledger.jpg', '/artworks/ember-dream-ledger.jpg',
     1.98, 'Digital Painting', 'Edition of 10', 'Portrait', 'Orange', '50 x 70 cm', 2026,
     'A ledger of heat and ritual, recording a flame-like form against a dark computational ground.',
     'Limited', 12, 82, 10
   ),
   (
     17, 6, 2, 'Glass Orbit Machine',
-    '/artworks/glass-orbit-machine.svg', '/artworks/glass-orbit-machine.svg',
+    '/artworks/glass-orbit-machine.jpg', '/artworks/glass-orbit-machine.jpg',
     1.64, 'Orbital Diagram', 'Edition of 16', 'Square', 'White', '60 x 60 cm', 2025,
     'An elegant orbital machine drawn with translucent loops, glass logic and precise motion.',
     'Trending', 16, 74, 7
   ),
   (
     18, 7, 2, 'Spectral Harbor',
-    '/artworks/spectral-harbor.svg', '/artworks/spectral-harbor.svg',
+    '/artworks/spectral-harbor.jpg', '/artworks/spectral-harbor.jpg',
     1.22, 'Synthetic Landscape', 'Edition of 18', 'Landscape', 'Blue', '80 x 50 cm', 2026,
     'A spectral harbor with sail-like data structures floating between sea, code and horizon.',
     NULL, 22, 49, 3
   ),
   (
     19, 5, 2, 'Lattice of Soft Machines',
-    '/artworks/lattice-of-soft-machines.svg', '/artworks/lattice-of-soft-machines.svg',
+    '/artworks/lattice-of-soft-machines.jpg', '/artworks/lattice-of-soft-machines.jpg',
     0.96, 'Abstract Print', 'Edition of 35', 'Square', 'Mixed', '60 x 60 cm', 2025,
     'A warm lattice where machine parts become soft, decorative and almost botanical.',
     NULL, 35, 45, 3
   ),
   (
     20, 9, 2, 'Cosmic Receipt',
-    '/artworks/cosmic-receipt.svg', '/artworks/cosmic-receipt.svg',
+    '/artworks/cosmic-receipt.jpg', '/artworks/cosmic-receipt.jpg',
     1.34, 'Token Study', 'Edition of 20', 'Portrait', 'White', '50 x 70 cm', 2026,
     'A receipt-like token drifting through a small cosmos of transaction marks and distant dots.',
     'New', 20, 58, 6
   ),
   (
     21, 7, 2, 'Magenta Weather System',
-    '/artworks/magenta-weather-system.svg', '/artworks/magenta-weather-system.svg',
+    '/artworks/magenta-weather-system.jpg', '/artworks/magenta-weather-system.jpg',
     1.18, 'Data Weather', 'Edition of 22', 'Landscape', 'Purple', '80 x 50 cm', 2025,
     'A volatile weather system of magenta bands, cyan pressure lines and warm synthetic sun.',
     NULL, 24, 52, 4
   ),
   (
     22, 8, 2, 'Green Room for Algorithms',
-    '/artworks/green-room-for-algorithms.svg', '/artworks/green-room-for-algorithms.svg',
+    '/artworks/green-room-for-algorithms.jpg', '/artworks/green-room-for-algorithms.jpg',
     1.44, 'Digital Architecture', 'Edition of 14', 'Square', 'Green', '70 x 70 cm', 2026,
     'A green architectural room where algorithms gather around a dark computational core.',
     'Trending', 14, 69, 8
   ),
   (
     23, 10, 2, 'Amber Vector Field',
-    '/artworks/amber-vector-field.svg', '/artworks/amber-vector-field.svg',
+    '/artworks/amber-vector-field.jpg', '/artworks/amber-vector-field.jpg',
     0.74, 'Vector Field', 'Edition of 32', 'Landscape', 'Orange', '70 x 50 cm', 2025,
     'A clean amber field of directional vectors, warm intervals and measured digital force.',
     NULL, 32, 41, 2
   ),
   (
     24, 5, 2, 'Blackbox Orchid',
-    '/artworks/blackbox-orchid.svg', '/artworks/blackbox-orchid.svg',
+    '/artworks/blackbox-orchid.jpg', '/artworks/blackbox-orchid.jpg',
     2.10, 'Algorithmic Bloom', '1 / 1', 'Square', 'Purple', '70 x 70 cm', 2026,
     'A radiant orchid grown inside a blackbox system, luminous and mathematically restrained.',
     'Limited', 8, 86, 11
   ),
   (
     25, 6, 2, 'Ice Bound Token',
-    '/artworks/ice-bound-token.svg', '/artworks/ice-bound-token.svg',
+    '/artworks/ice-bound-token.jpg', '/artworks/ice-bound-token.jpg',
     1.08, 'Token Study', 'Edition of 28', 'Square', 'Blue', '60 x 60 cm', 2026,
     'A frozen token crystal, cut by clean axes and suspended in a pale protocol field.',
     'New', 28, 47, 4
   ),
   (
     26, 10, 2, 'Redshift City Scan',
-    '/artworks/redshift-city-scan.svg', '/artworks/redshift-city-scan.svg',
+    '/artworks/redshift-city-scan.jpg', '/artworks/redshift-city-scan.jpg',
     1.56, 'City Data Scan', 'Edition of 12', 'Landscape', 'Red', '80 x 50 cm', 2025,
     'A redshifted city profile scanned by heat, movement and horizontal streams of urban data.',
     'Trending', 12, 73, 9
