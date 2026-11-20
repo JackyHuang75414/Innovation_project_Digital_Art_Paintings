@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { loginBackend, register as registerApi, getMe, googleLogin as googleLoginApi, deleteAccount as deleteAccountApi } from '@/api/auth'
+import { TOKEN_KEY } from '@/api/http'
 
 export const DEMO_ACCOUNTS = [
   {
@@ -82,24 +83,25 @@ export const useAuthStore = defineStore('auth', () => {
   function logout() {
     user.value = null
     localStorage.removeItem(STORAGE_KEY)
-    localStorage.removeItem('artex_jwt')
+    localStorage.removeItem(TOKEN_KEY)
   }
 
   // Real backend login — saves JWT, fetches user profile
   async function loginReal(name, password) {
     try {
-      const token = await loginBackend(name, password)
+      const { data: token } = await loginBackend(name, password)
       if (!token) return { ok: false, msg: 'No token returned' }
-      localStorage.setItem('artex_jwt', token)
-      const profile = await getMe()
+      localStorage.setItem(TOKEN_KEY, token)
+      const { data: profile } = await getMe()
+      const demo = DEMO_ACCOUNTS.find(a => a.username === name)
       const enriched = {
         id: profile.id,
         username: profile.name,
-        displayName: profile.name,
-        initials: profile.name.slice(0, 2).toUpperCase(),
-        color: '#22c55e',
-        bio: '',
-        isPaid: false,
+        displayName: demo?.displayName ?? profile.name,
+        initials: demo?.initials ?? profile.name.slice(0, 2).toUpperCase(),
+        color: demo?.color ?? '#E8552A',
+        bio: demo?.bio ?? '',
+        isPaid: demo?.isPaid ?? false,
         isRealUser: true,
       }
       user.value = enriched
@@ -126,10 +128,10 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function googleLogin(credential) {
     try {
-      const token = await googleLoginApi(credential)
+      const { data: token } = await googleLoginApi(credential)
       if (!token) return { ok: false, msg: 'No token returned' }
-      localStorage.setItem('artex_jwt', token)
-      const profile = await getMe()
+      localStorage.setItem(TOKEN_KEY, token)
+      const { data: profile } = await getMe()
       const enriched = {
         id: profile.id,
         username: profile.name,
@@ -154,14 +156,14 @@ export const useAuthStore = defineStore('auth', () => {
       await deleteAccountApi()
       user.value = null
       localStorage.removeItem(STORAGE_KEY)
-      localStorage.removeItem('artex_jwt')
+      localStorage.removeItem(TOKEN_KEY)
       return { ok: true }
     } catch (e) {
       return { ok: false, msg: e.message }
     }
   }
 
-  const hasJwt = computed(() => !!localStorage.getItem('artex_jwt'))
+  const hasJwt = computed(() => !!localStorage.getItem(TOKEN_KEY))
 
   return {
     user, isLoggedIn, isPaid, displayName, initials, color, hasJwt,

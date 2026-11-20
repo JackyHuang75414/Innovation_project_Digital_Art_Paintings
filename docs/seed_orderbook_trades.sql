@@ -82,40 +82,6 @@ JOIN (
 ) tr ON 1=1
 WHERE m.is_tradable = 1;
 
--- ────────────────────────────────────────────────────────────
--- 4. FIX IMAGE URLS — use reliable picsum.photos for all artworks
---    (Wikipedia CDN blocks hotlinks from localhost in some browsers)
--- ────────────────────────────────────────────────────────────
-UPDATE artworks SET
-  image_url       = 'https://picsum.photos/seed/beeple/600/600',
-  image_large_url = 'https://picsum.photos/seed/beeple/1200/1200'
-WHERE id = 1;
-
-UPDATE artworks SET
-  image_url       = 'https://picsum.photos/seed/xcopy/600/600',
-  image_large_url = 'https://picsum.photos/seed/xcopy/1200/1200'
-WHERE id = 2;
-
-UPDATE artworks SET
-  image_url       = 'https://picsum.photos/seed/pak/600/600',
-  image_large_url = 'https://picsum.photos/seed/pak/1200/1200'
-WHERE id = 3;
-
-UPDATE artworks SET
-  image_url       = 'https://picsum.photos/seed/anadol/600/600',
-  image_large_url = 'https://picsum.photos/seed/anadol/1200/1200'
-WHERE id = 4;
-
-UPDATE artworks SET
-  image_url       = 'https://picsum.photos/seed/crespo/600/600',
-  image_large_url = 'https://picsum.photos/seed/crespo/1200/1200'
-WHERE id = 5;
-
-UPDATE artworks SET
-  image_url       = 'https://picsum.photos/seed/hobbs/600/600',
-  image_large_url = 'https://picsum.photos/seed/hobbs/1200/1200'
-WHERE id = 6;
-
 -- Restore safe-update mode
 SET SQL_SAFE_UPDATES = 1;
 

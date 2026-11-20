@@ -113,7 +113,7 @@ export const useWalletStore = defineStore('wallet', () => {
       walletType: walletType.value,
       address: address.value,
       chainId: chainId.value,
-      balanceNative: balanceEth.value,
+      balanceNative: balanceEth.value != null ? parseFloat(balanceEth.value) : null,
     })
     applyConnection(response.data)
   }
@@ -144,7 +144,7 @@ export const useWalletStore = defineStore('wallet', () => {
       await new Promise(r => setTimeout(r, 600))  // brief animation
       address.value    = '0xTest4rtEx00DemoAcc0unt'
       walletType.value = 'testwallet'
-      balanceEth.value = '10.0000'
+      balanceEth.value = 10.0
       chainId.value    = 'test-1337'
       try {
         await persistConnection()

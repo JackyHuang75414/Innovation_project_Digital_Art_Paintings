@@ -2,11 +2,9 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore, DEMO_ACCOUNTS } from '@/stores/auth'
-import { useTradingStore } from '@/stores/trading'
 
 const emit   = defineEmits(['close'])
 const auth   = useAuthStore()
-const store  = useTradingStore()
 const router = useRouter()
 
 const username = ref('')
@@ -20,12 +18,9 @@ async function submit() {
   if (!username.value || !password.value) { error.value = 'Please enter both fields'; return }
   loading.value = true
   error.value = ''
-  await new Promise(r => setTimeout(r, 400))
-  const result = auth.login(username.value.trim(), password.value)
+  const result = await auth.loginReal(username.value.trim(), password.value)
   loading.value = false
-  if (!result.ok) { error.value = result.msg; return }
-  store.wallet.usd = result.account.startUsd
-  store.wallet.btc = result.account.startBtc
+  if (!result.ok) { error.value = result.msg || 'Login failed — check username and password'; return }
   emit('close')
 }
 

@@ -6,14 +6,25 @@ import AppFooter from '@/components/layout/AppFooter.vue'
 import AiRecommendChat from '@/components/ui/AiRecommendChat.vue'
 import { usePricesStore } from '@/stores/prices'
 import { useUserProfileStore } from '@/stores/userProfile'
+import { useWalletStore } from '@/stores/wallet'
+import { useAuthStore } from '@/stores/auth'
 import { ARTWORKS } from '@/stores/trading'
 
 const route   = useRoute()
 const prices  = usePricesStore()
 const profile = useUserProfileStore()
+const wallet  = useWalletStore()
+const auth    = useAuthStore()
 
-onMounted(prices.startPolling)
+onMounted(() => {
+  prices.startPolling()
+  if (auth.isLoggedIn) wallet.loadConnection()
+})
 onUnmounted(prices.stopPolling)
+
+watch(() => auth.isLoggedIn, (loggedIn) => {
+  if (loggedIn) wallet.loadConnection()
+})
 
 // ── Track browsing for AI user profile ────────────────────────────────────
 watch(

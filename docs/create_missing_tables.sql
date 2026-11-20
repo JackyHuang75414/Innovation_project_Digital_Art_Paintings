@@ -136,6 +136,7 @@ CREATE TABLE wallet_connections (
     balance_native  DECIMAL(30,10) NOT NULL DEFAULT 0,
     is_active       TINYINT(1)    NOT NULL DEFAULT 1,
     connected_at    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    disconnected_at DATETIME      NULL,
     UNIQUE KEY uq_user_address (user_id, address)
 );
 
@@ -147,6 +148,12 @@ VALUES
     (1, 'demo',  'demo@artex.io',  'DEMO_ACCOUNT'),
     (2, 'whale', 'whale@artex.io', 'DEMO_ACCOUNT'),
     (3, 'algo',  'algo@artex.io',  'DEMO_ACCOUNT');
+
+-- ── Seed wallets for demo users ───────────────────────────────────────────────
+INSERT IGNORE INTO user_wallets (user_id, usd_balance, btc_balance) VALUES
+    (1, 10000.00,  0.50),
+    (2, 200000.00, 3.00),
+    (3, 50000.00,  1.20);
 
 INSERT INTO user_wallets (user_id, usd_balance, btc_balance)
 VALUES

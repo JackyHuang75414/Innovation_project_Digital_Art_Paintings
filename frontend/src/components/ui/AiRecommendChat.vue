@@ -31,15 +31,8 @@ const messagesEl = ref(null)
 // Whether the trading store has been initialised (needed for price monitoring)
 const tradingReady = ref(false)
 
-// ── Artwork pool (used for recommendation cards) ──────────────────────────
-const artworkPool = [
-  { id: 1, imageUrl: 'https://upload.wikimedia.org/wikipedia/en/thumb/d/d4/Everydays%2C_the_First_5000_Days.jpg/200px-Everydays%2C_the_First_5000_Days.jpg', title: 'Everydays: The First 5000 Days', artistName: 'Beeple', price: 6.90 },
-  { id: 2, imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Right-Click_and_Save_as_Guy.gif/200px-Right-Click_and_Save_as_Guy.gif', title: 'Right-click and Save As guy', artistName: 'Xcopy', price: 2.80 },
-  { id: 3, imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/A_Coin_for_the_Ferryman.gif/200px-A_Coin_for_the_Ferryman.gif', title: 'A Coin for the Ferryman', artistName: 'Xcopy', price: 1.92 },
-  { id: 4, imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Pakpixel.jpg/200px-Pakpixel.jpg', title: 'The Pixel', artistName: 'Pak', price: 3.20 },
-  { id: 5, imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Machine_Hallucinations-Artechouse_NYC_by_Refik_Anadol.jpg/200px-Machine_Hallucinations-Artechouse_NYC_by_Refik_Anadol.jpg', title: 'Machine Hallucinations: NYC', artistName: 'Refik Anadol', price: 1.40 },
-  { id: 6, imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Unsupervised_by_Refik_Anadol.jpg/200px-Unsupervised_by_Refik_Anadol.jpg', title: 'Unsupervised', artistName: 'Refik Anadol', price: 0.88 },
-]
+// ── Artwork pool — uses live data from trading store (imageUrl from DB) ───
+const artworkPool = computed(() => trading.ARTWORKS)
 
 // ── Dynamic system prompt ─────────────────────────────────────────────────
 const systemPrompt = computed(() => {
@@ -166,7 +159,7 @@ async function generateProactiveRecommendation() {
 
   try {
     const replyText = await callLLM(userMsg, true)
-    const picks = [...artworkPool].sort(() => Math.random() - 0.5).slice(0, 2)
+    const picks = [...artworkPool.value].sort(() => Math.random() - 0.5).slice(0, 2)
     notif.push({
       text: replyText,
       artworks: picks,
@@ -213,7 +206,7 @@ Please provide a concise alert and suggest whether to buy/sell/hold. If suggesti
     const action = parseAction(replyText)
     notif.push({
       text: replyText.replace(/\[ACTION:.*?\]/, '').trim(),
-      artworks: [artworkPool.find(a => a.id === art.id)].filter(Boolean),
+      artworks: [artworkPool.value.find(a => a.id === art.id)].filter(Boolean),
       type: 'price_alert',
       actions: action ? [action] : null,
     })
@@ -331,7 +324,7 @@ async function sendMessage() {
 
     const action = parseAction(replyText)
     const cleanText = replyText.replace(/\[ACTION:.*?\]/, '').trim()
-    const picks = [...artworkPool].sort(() => Math.random() - 0.5).slice(0, 2)
+    const picks = [...artworkPool.value].sort(() => Math.random() - 0.5).slice(0, 2)
 
     messages.value = [...messages.value, {
       role: 'ai',

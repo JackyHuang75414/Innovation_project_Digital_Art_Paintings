@@ -59,6 +59,7 @@ export const useTradingStore = defineStore('trading', () => {
   async function init() {
     if (loaded.value) {
       await loadWallet()
+      if (!_sseEmitter) _connectSse()
       return
     }
     await loadMarket()

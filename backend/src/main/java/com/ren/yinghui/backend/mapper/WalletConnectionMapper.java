@@ -51,6 +51,13 @@ public interface WalletConnectionMapper {
     @Insert("""
             INSERT INTO wallet_connections(user_id, wallet_type, address, chain_id, balance_native, is_active)
             VALUES(#{userId}, #{walletType}, #{address}, #{chainId}, #{balanceNative}, 1)
+            ON DUPLICATE KEY UPDATE
+              wallet_type     = VALUES(wallet_type),
+              chain_id        = VALUES(chain_id),
+              balance_native  = VALUES(balance_native),
+              is_active       = 1,
+              connected_at    = NOW(),
+              disconnected_at = NULL
             """)
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(WalletConnectionInsertRow row);
